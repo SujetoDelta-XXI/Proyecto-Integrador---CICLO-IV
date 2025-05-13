@@ -39,6 +39,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Login from "./components/Login";
 import Footer from "./components/Footer";
 import Register from "./components/Register";
+import LoginForm from "./components/LoginForm";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<LoginForm />} />
         </Routes>
       </div>
       <Footer />
