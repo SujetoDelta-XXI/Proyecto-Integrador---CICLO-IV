@@ -40,15 +40,17 @@ import Login from "./components/interfaces/Login";
 import Footer from "./components/interfaces/Footer";
 import Register from "./components/interfaces/Register";
 import LoginForm from "./components/interfaces/LoginForm";
+import Index from "./components/interfaces/Index";
 
 function App() {
   return (
     <Router>
       <div className="main-container">
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<LoginForm />} />
+          <Route path="/loginForm" element={<LoginForm />} />
         </Routes>
       </div>
       <Footer />

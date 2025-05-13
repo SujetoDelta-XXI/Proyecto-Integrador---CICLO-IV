@@ -9,7 +9,7 @@ function Login() {
         Inicia sesión con tu correo electrónico o regístrate
       </p>
       <div className="login-buttons">
-        <Link to="../login" className="login-btn white">
+        <Link to="../loginForm" className="login-btn white">
           INICIAR SESIÓN
         </Link>
         <Link to="../register" className="login-btn black">
