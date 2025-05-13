@@ -44,7 +44,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 1rem;
+}
+
+.footer-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio horizontal entre íconos */
+}
+
+.footer-icons svg {
+  font-size: 2em; /* Duplica el tamaño (ajusta si quieres más grande) */
+  vertical-align: middle;
 }
 
 .footer-icons span {

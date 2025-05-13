@@ -36,10 +36,10 @@ export default App
 */
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Login from "./components/Login";
-import Footer from "./components/Footer";
-import Register from "./components/Register";
-import LoginForm from "./components/LoginForm";
+import Login from "./components/interfaces/Login";
+import Footer from "./components/interfaces/Footer";
+import Register from "./components/interfaces/Register";
+import LoginForm from "./components/interfaces/LoginForm";
 
 function App() {
   return (

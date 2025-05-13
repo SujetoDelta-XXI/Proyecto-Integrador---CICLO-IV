@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import "./LoginForm.css";
+import "../css/LoginForm.css";
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -13,17 +13,13 @@ function LoginForm() {
       </p>
       <form className="loginform-form">
         <label>
-          Nombres
-          <input type="text" className="loginform-input" />
-        </label>
-        <label>
-          Teléfono
-          <input type="tel" className="loginform-input" />
-        </label>
-        <label>
           Email
           <input type="email" className="loginform-input" />
         </label>
+        <label>
+          Contraseña
+          <input type="password" className="loginform-input" />
+        </label>  
         <div className="loginform-forgot">
           <Link to="/forgot-password">Olvidé mi contraseña</Link>
         </div>

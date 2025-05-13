@@ -1,4 +1,6 @@
-import "./Footer.css";
+import "../css/Footer.css";
+import { FaYoutube, FaInstagram, FaTiktok } from "react-icons/fa";
+import { BsDiscord } from "react-icons/bs";
 
 function Footer() {
   return (
@@ -19,8 +21,13 @@ function Footer() {
       <div className="footer-bottom">
         <span>Copyright © 2024 Marca. Derechos reservados.</span>
         <span className="footer-icons">
-          {/*iconos*/}
-          <span>○</span> <span>●</span> <span>◎</span>
+          <FaYoutube />
+          <FaInstagram />
+          <BsDiscord />
+          <FaTiktok />
+          <span>○</span> 
+          <span>●</span> 
+          <span>◎</span>
         </span>
       </div>
     </footer>
