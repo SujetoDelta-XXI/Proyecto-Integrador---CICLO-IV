@@ -1,4 +1,4 @@
-import { useState } from 'react'
+/*import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -33,3 +33,25 @@ function App() {
 }
 
 export default App
+*/
+
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Login from "./components/Login";
+import Footer from "./components/Footer";
+import Register from "./components/Register";
+
+function App() {
+  return (
+    <Router>
+      <div className="main-container">
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
+      <Footer />
+    </Router>
+  );
+}
+
+export default App;

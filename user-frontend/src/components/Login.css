@@ -1,0 +1,75 @@
+.login-container {
+  max-width: 480px;
+  margin: 70px auto 0 auto;
+  text-align: left;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  margin-left: 0;
+}
+
+.login-subtitle {
+  font-size: 0.95rem;
+  color: #222;
+  margin-bottom: 24px;
+  margin-left: 0;
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.login-btn {
+  padding: 12px 0;
+  border-radius: 2px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #111;
+}
+
+.login-btn.white {
+  background: #fff;
+  color: #222;
+  border: 1px solid #111;
+}
+
+.login-btn.black {
+  background: #111;
+  color: #fff;
+  border: 1px solid #111;
+}
+
+.login-secure {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #222;
+  margin: 18px 0 32px 0;
+  gap: 6px;
+}
+
+.lock-icon {
+  font-size: 1rem;
+}
+
+.login-breadcrumb {
+  font-size: 0.95rem;
+  color: #222;
+  margin-top: 32px;
+  text-align: left;
+  margin-left: 0;
+}
+
+.login-breadcrumb .active {
+  font-weight: bold;
+}
