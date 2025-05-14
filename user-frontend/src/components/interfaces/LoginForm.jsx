@@ -14,11 +14,11 @@ function LoginForm() {
       <form className="loginform-form">
         <label>
           Email
-          <input type="email" className="loginform-input" />
+          <input type="email" className="loginform-input" id="email" />
         </label>
         <label>
           Contraseña
-          <input type="password" className="loginform-input" />
+          <input type="password" className="loginform-input" id="password" />
         </label>  
         <div className="loginform-forgot">
           <Link to="/forgot-password">Olvidé mi contraseña</Link>

@@ -8,23 +8,23 @@ function Register() {
       <form className="register-form">
         <label>
           EMAIL
-          <input type="email" className="register-input" />
+          <input type="email" className="register-input" id="email"/>
         </label>
         <label>
           CONTRASEÑA
-          <input type="password" className="register-input" />
+          <input type="password" className="register-input" id="password" />
         </label>
         <label>
           NOMBRE
-          <input type="text" className="register-input" />
+          <input type="text" className="register-input" id="nombre" />
         </label>
         <label>
           APELLIDOS
-          <input type="text" className="register-input" />
+          <input type="text" className="register-input" id="apellidos"/>
         </label>
         <label>
           TELÉFONO
-          <input type="tel" className="register-input" />
+          <input type="tel" className="register-input" id="telefono" />
         </label>
         <div className="register-checkbox-row">
           <input type="checkbox" id="privacy" />
