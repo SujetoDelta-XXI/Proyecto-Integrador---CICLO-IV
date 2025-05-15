@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // <-- 1. Importa useNavigate
 import "../css/Register.css";
 
 function Register() {
@@ -8,6 +9,7 @@ function Register() {
   const [apellidos, setApellidos] = useState('');
   const [telefono, setTelefono] = useState('');
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -60,6 +62,7 @@ function Register() {
         setApellidos('');
         setTelefono('');
         setAceptaPrivacidad(false);
+        navigate('/')
       } else {
         let errorMsg = 'Error al registrar usuario';
         try {
