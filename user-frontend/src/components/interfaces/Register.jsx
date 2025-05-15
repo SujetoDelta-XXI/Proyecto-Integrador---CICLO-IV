@@ -83,6 +83,7 @@ function Register() {
       <form className="register-form" onSubmit={handleRegister}>
         <label>
           EMAIL
+<<<<<<< HEAD
           <input
             type="email"
             className="register-input"
@@ -129,6 +130,25 @@ function Register() {
             value={telefono}
             onChange={e => setTelefono(e.target.value)}
           />
+=======
+          <input type="email" className="register-input" id="email"/>
+        </label>
+        <label>
+          CONTRASEÑA
+          <input type="password" className="register-input" id="password" />
+        </label>
+        <label>
+          NOMBRE
+          <input type="text" className="register-input" id="nombre" />
+        </label>
+        <label>
+          APELLIDOS
+          <input type="text" className="register-input" id="apellidos"/>
+        </label>
+        <label>
+          TELÉFONO
+          <input type="tel" className="register-input" id="telefono" />
+>>>>>>> aa574ccdc6676ff2e29763421e95f4aab3846f21
         </label>
         <div className="register-checkbox-row">
           <input
