@@ -1,10 +1,12 @@
 import MainHeader from "./Header";
 import "../css/Index.css";
+import CarruselComponent from "./CarruselComponent";
 
 function Index() {
   return (
     <>
       <MainHeader />
+      <CarruselComponent />
       <div className="index-hero">
         <h1 className="index-title">Bienvenido a EstiloYa</h1>
         <p className="index-subtitle">
