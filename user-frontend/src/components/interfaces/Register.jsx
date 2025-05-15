@@ -11,7 +11,9 @@ function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!correo.endsWith("@tecsup.edu.pe")) {
+
+    // Validación de correo institucional (quita espacios)
+    if (!correo.trim().endsWith("@tecsup.edu.pe")) {
       alert("El correo debe ser institucional de Tecsup (@tecsup.edu.pe)");
       return;
     }
@@ -24,7 +26,7 @@ function Register() {
     const usuario = {
       nombre,
       apellidos,
-      correo,
+      correo: correo.trim(),
       contraseña,
       telefono,
       tipoUsuario: "cliente"
@@ -40,7 +42,6 @@ function Register() {
       });
 
       if (response.ok) {
-        // Lee el texto de la respuesta
         const text = await response.text();
         let data = null;
         if (text) {
@@ -60,7 +61,6 @@ function Register() {
         setTelefono('');
         setAceptaPrivacidad(false);
       } else {
-        // Intenta leer el error como texto, pero si falla, muestra un mensaje genérico
         let errorMsg = 'Error al registrar usuario';
         try {
           const errorText = await response.text();
@@ -83,13 +83,12 @@ function Register() {
       <form className="register-form" onSubmit={handleRegister}>
         <label>
           EMAIL
-<<<<<<< HEAD
           <input
             type="email"
             className="register-input"
+            id="email"
             value={correo}
             onChange={e => setCorreo(e.target.value)}
-            required
           />
         </label>
         <label>
@@ -97,9 +96,9 @@ function Register() {
           <input
             type="password"
             className="register-input"
+            id="password"
             value={contraseña}
             onChange={e => setContraseña(e.target.value)}
-            required
           />
         </label>
         <label>
@@ -107,9 +106,9 @@ function Register() {
           <input
             type="text"
             className="register-input"
+            id="nombre"
             value={nombre}
             onChange={e => setNombre(e.target.value)}
-            required
           />
         </label>
         <label>
@@ -117,9 +116,9 @@ function Register() {
           <input
             type="text"
             className="register-input"
+            id="apellidos"
             value={apellidos}
             onChange={e => setApellidos(e.target.value)}
-            required
           />
         </label>
         <label>
@@ -127,28 +126,10 @@ function Register() {
           <input
             type="tel"
             className="register-input"
+            id="telefono"
             value={telefono}
             onChange={e => setTelefono(e.target.value)}
           />
-=======
-          <input type="email" className="register-input" id="email"/>
-        </label>
-        <label>
-          CONTRASEÑA
-          <input type="password" className="register-input" id="password" />
-        </label>
-        <label>
-          NOMBRE
-          <input type="text" className="register-input" id="nombre" />
-        </label>
-        <label>
-          APELLIDOS
-          <input type="text" className="register-input" id="apellidos"/>
-        </label>
-        <label>
-          TELÉFONO
-          <input type="tel" className="register-input" id="telefono" />
->>>>>>> aa574ccdc6676ff2e29763421e95f4aab3846f21
         </label>
         <div className="register-checkbox-row">
           <input
