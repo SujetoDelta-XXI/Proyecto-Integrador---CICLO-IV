@@ -17,7 +17,7 @@ public class UserController {
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody User user) {
         // Validación de correo institucional
-        if (!user.getCorreo().endsWith("@tecsup.edu.pe")) {
+        if (!user.getCorreo().trim().toLowerCase().endsWith("@tecsup.edu.pe")) {
             return ResponseEntity
                 .badRequest()
                 .body("El correo debe ser institucional de Tecsup (@tecsup.edu.pe)");
