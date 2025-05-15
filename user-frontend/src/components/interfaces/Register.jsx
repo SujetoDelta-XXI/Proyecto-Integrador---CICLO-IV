@@ -9,6 +9,7 @@ function Register() {
   const [telefono, setTelefono] = useState('');
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
 
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
