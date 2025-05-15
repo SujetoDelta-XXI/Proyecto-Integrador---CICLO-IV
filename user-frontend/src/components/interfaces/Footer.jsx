@@ -2,18 +2,61 @@ import "../css/Footer.css";
 import { FaYoutube, FaInstagram, FaTiktok } from "react-icons/fa";
 import { BsDiscord } from "react-icons/bs";
 
+const footerLinks = [
+  {
+    title: "Navegación",
+    links: [
+      { text: "Artículos y Tallas", url: "#" },
+      { text: "Opciones de Personalización", url: "#" },
+      { text: "Enviós", url: "#"},
+      { text: "Pagos y Facturas", url:"#"},
+      { text: "Cambios,  Devoluciones y Reembolsos", url:"#"},
+      { text: "Novedades", url: "#" },
+      { text: "Contacto", url: "#" },
+    ],
+  },
+  {
+    title: "Soporte",
+    links: [
+      { text: "Preguntas Frecuentes", url: "#" },
+      { text: "Envíos", url: "#" },
+      { text: "Devoluciones", url: "#" },
+      { text: "Atención al Cliente", url: "#" },
+    ],
+  },
+  {
+    title: "Empresa",
+    links: [
+      { text: "Sobre Nosotros", url: "#" },
+      { text: "Trabaja con Nosotros", url: "#" },
+      { text: "Prensa", url: "#" },
+      { text: "Blog", url: "#" },
+    ],
+  },
+  {
+    title: "Políticas",
+    links: [
+      { text: "Términos y Condiciones", url: "#" },
+      { text: "Política de Privacidad", url: "#" },
+      { text: "Cookies", url: "#" },
+      { text: "Aviso Legal", url: "#" },
+    ],
+  },
+];
+
 function Footer() {
   return (
     <footer className="footer">
       <div className="footer-nav">
-        {[1, 2, 3, 4].map((col) => (
-          <div className="footer-col" key={col}>
-            <div className="footer-title">Navegación</div>
+        {footerLinks.map((col, idx) => (
+          <div className="footer-col" key={idx}>
+            <div className="footer-title">{col.title}</div>
             <ul>
-              <li><a href="#">Enlace 1</a></li>
-              <li><a href="#">Enlace 2</a></li>
-              <li><a href="#">Enlace 3</a></li>
-              <li><a href="#">Enlace 4</a></li>
+              {col.links.map((link, i) => (
+                <li key={i}>
+                  <a href={link.url}>{link.text}</a>
+                </li>
+              ))}
             </ul>
           </div>
         ))}
