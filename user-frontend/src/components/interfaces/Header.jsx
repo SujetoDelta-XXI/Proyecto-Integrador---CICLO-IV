@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
-import "../css/Header.css";
 
 function Header() {
   return (
-    <header className="main-header">
-      <div className="main-header-logo">EstiloYa</div>
-      <nav className="main-header-nav">
-        <Link to="/tienda" className="main-header-link">Tienda</Link>
-        <Link to="/login" className="main-header-link">Login</Link>
-        <Link to="/register" className="main-header-link">Registro</Link>
+    <header className="w-full bg-white flex items-center justify-between py-4 px-8 border-b border-gray-200 box-border sticky top-0 z-10">
+      <div className="text-2xl font-bold text-gray-900 tracking-wide">EstiloYa</div>
+      <nav className="flex gap-6">
+        <Link to="/tienda" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">Tienda</Link>
+        <Link to="/login" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">Login</Link>
+        <Link to="/register" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">Registro</Link>
         {/* Agrega más enlaces si lo necesitas */}
       </nav>
     </header>

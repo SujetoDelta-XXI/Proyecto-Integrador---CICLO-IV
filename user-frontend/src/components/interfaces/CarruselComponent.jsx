@@ -15,10 +15,8 @@ const ITEMS_POR_VISTA = 3;
 function CarruselMultiItem() {
   const [indice, setIndice] = useState(0);
 
-  // Calcula los productos a mostrar
   const productosAMostrar = productos.slice(indice, indice + ITEMS_POR_VISTA);
 
-  // Controla los botones
   const puedeRetroceder = indice > 0;
   const puedeAvanzar = indice + ITEMS_POR_VISTA < productos.length;
 
