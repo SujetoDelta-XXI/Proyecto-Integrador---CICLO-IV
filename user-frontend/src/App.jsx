@@ -11,7 +11,7 @@ import Index from "./components/interfaces/Index";
 function App() {
   return (
     <Router>
-      <div className="main-container">
+      <div className="main-container"> {/* Puedes añadir clases de Tailwind aquí si es necesario */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />

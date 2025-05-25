@@ -1,58 +1,14 @@
-/*import { Link, useNavigate } from "react-router-dom";
-import "../css/LoginForm.css";
-
-function LoginForm() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="loginform-container">
-      <div className="loginform-title">EstiloYa</div>
-      <h1 className="loginform-welcome">BIENVENIDO/A</h1>
-      <p className="loginform-subtitle">
-        Inicia sesión con tu correo electrónico o regístrate
-      </p>
-      <form className="loginform-form">
-        <label>
-          Email
-          <input type="email" className="loginform-input" id="email" />
-        </label>
-        <label>
-          Contraseña
-          <input type="password" className="loginform-input" id="password" />
-        </label>  
-        <div className="loginform-forgot">
-          <Link to="/forgot-password">Olvidé mi contraseña</Link>
-        </div>
-        <button type="submit" className="loginform-btn black">
-          CONTINUAR
-        </button>
-        <button
-          type="button"
-          className="loginform-btn white"
-          onClick={() => navigate(-1)}
-        >
-          ATRÁS
-        </button>
-      </form>
-    </div>
-  );
-}
-
-export default LoginForm;*/
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../css/LoginForm.css";
 
 function LoginForm() {
-  const [correo, setCorreo] = useState(""); // <-- Estado para el email
-  const [contraseña, setContraseña] = useState(""); // <-- Estado para la contraseña
+  const [correo, setCorreo] = useState("");
+  const [contraseña, setContraseña] = useState("");
   const navigate = useNavigate();
 
-  // Nueva función para manejar el submit
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Validación simple
     if (!correo || !contraseña) {
       alert("Por favor, completa todos los campos.");
       return;
@@ -67,7 +23,6 @@ function LoginForm() {
 
       if (response.ok) {
         alert("Login exitoso");
-        // Redirige al index ("/") después de login exitoso
         navigate("/");
       } else {
         alert("Credenciales incorrectas");
@@ -79,42 +34,42 @@ function LoginForm() {
   };
 
   return (
-    <div className="loginform-container">
-      <div className="loginform-title">EstiloYa</div>
-      <h1 className="loginform-welcome">BIENVENIDO/A</h1>
-      <p className="loginform-subtitle">
+    <div className="max-w-md mx-auto mt-10 text-left">
+      <div className="text-2xl font-normal mb-6 mt-4">EstiloYa</div>
+      <h1 className="text-4xl font-bold mb-2">BIENVENIDO/A</h1>
+      <p className="text-base text-gray-800 mb-6">
         Inicia sesión con tu correo electrónico o regístrate
       </p>
-      <form className="loginform-form" onSubmit={handleLogin}> {/* <-- Cambia el onSubmit */}
-        <label>
+      <form className="flex flex-col" onSubmit={handleLogin}>
+        <label className="block text-base mb-1 mt-4 font-normal">
           Email
           <input
             type="email"
-            className="loginform-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="email"
-            value={correo} // <-- Input controlado
+            value={correo}
             onChange={e => setCorreo(e.target.value)}
           />
         </label>
-        <label>
+        <label className="block text-base mb-1 mt-4 font-normal">
           Contraseña
           <input
             type="password"
-            className="loginform-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="password"
-            value={contraseña} // <-- Input controlado
+            value={contraseña}
             onChange={e => setContraseña(e.target.value)}
           />
         </label>
-        <div className="loginform-forgot">
-          <Link to="/forgot-password">Olvidé mi contraseña</Link>
+        <div className="text-right mt-2 mb-4">
+          <Link to="/forgot-password" className="text-sm text-gray-800 no-underline">Olvidé mi contraseña</Link>
         </div>
-        <button type="submit" className="loginform-btn black">
+        <button type="submit" className="w-full py-3 text-base rounded-none border border-gray-800 mb-3 cursor-pointer transition-colors duration-200 bg-gray-900 text-white">
           CONTINUAR
         </button>
         <button
           type="button"
-          className="loginform-btn white"
+          className="w-full py-3 text-base rounded-none border border-gray-800 mb-3 cursor-pointer transition-colors duration-200 bg-white text-gray-800"
           onClick={() => navigate(-1)}
         >
           ATRÁS

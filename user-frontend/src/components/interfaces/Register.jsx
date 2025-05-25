@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // <-- 1. Importa useNavigate
-import "../css/Register.css";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
   const [correo, setCorreo] = useState('');
@@ -11,11 +10,9 @@ function Register() {
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
   const navigate = useNavigate();
 
-
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Validación de correo institucional (quita espacios)
     if (!correo.trim().endsWith("@tecsup.edu.pe")) {
       alert("El correo debe ser institucional de Tecsup (@tecsup.edu.pe)");
       return;
@@ -56,7 +53,6 @@ function Register() {
         }
         alert('Usuario registrado con éxito');
         console.log('Respuesta del backend:', data);
-        // Limpia los campos
         setCorreo('');
         setContraseña('');
         setNombre('');
@@ -81,72 +77,72 @@ function Register() {
   };
 
   return (
-    <div className="register-container">
-      <h1 className="register-title">EstiloYa</h1>
-      <div className="register-section-title">DATOS PERSONALES</div>
-      <form className="register-form" onSubmit={handleRegister}>
-        <label>
+    <div className="max-w-md mx-auto mt-10 text-left">
+      <h1 className="text-4xl font-bold mb-6">EstiloYa</h1>
+      <div className="text-lg font-medium mb-4 mt-2">DATOS PERSONALES</div>
+      <form className="flex flex-col" onSubmit={handleRegister}>
+        <label className="block text-base mb-1 mt-4 font-normal">
           EMAIL
           <input
             type="email"
-            className="register-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="email"
             value={correo}
             onChange={e => setCorreo(e.target.value)}
           />
         </label>
-        <label>
+        <label className="block text-base mb-1 mt-4 font-normal">
           CONTRASEÑA
           <input
             type="password"
-            className="register-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="password"
             value={contraseña}
             onChange={e => setContraseña(e.target.value)}
           />
         </label>
-        <label>
+        <label className="block text-base mb-1 mt-4 font-normal">
           NOMBRE
           <input
             type="text"
-            className="register-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="nombre"
             value={nombre}
             onChange={e => setNombre(e.target.value)}
           />
         </label>
-        <label>
+        <label className="block text-base mb-1 mt-4 font-normal">
           APELLIDOS
           <input
             type="text"
-            className="register-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="apellidos"
             value={apellidos}
             onChange={e => setApellidos(e.target.value)}
           />
         </label>
-        <label>
+        <label className="block text-base mb-1 mt-4 font-normal">
           TELÉFONO
           <input
             type="tel"
-            className="register-input"
+            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
             id="telefono"
             value={telefono}
             onChange={e => setTelefono(e.target.value)}
           />
         </label>
-        <div className="register-checkbox-row">
+        <div className="flex items-center mt-4 mb-6">
           <input
             type="checkbox"
             id="privacy"
             checked={aceptaPrivacidad}
             onChange={e => setAceptaPrivacidad(e.target.checked)}
           />
-          <label htmlFor="privacy" className="register-checkbox-label">
+          <label htmlFor="privacy" className="text-sm ml-2 text-gray-800">
             He podido leer y entiendo la Política de Privacidad
           </label>
         </div>
-        <button type="submit" className="register-btn">
+        <button type="submit" className="w-full py-3 bg-white text-gray-800 border border-gray-800 text-base cursor-pointer rounded-none transition-colors duration-200 hover:bg-gray-800 hover:text-white">
           CREAR CUENTA
         </button>
       </form>
