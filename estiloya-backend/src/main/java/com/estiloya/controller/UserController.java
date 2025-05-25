@@ -3,8 +3,10 @@ package com.estiloya.controller;
 import com.estiloya.model.User;
 import com.estiloya.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -14,6 +16,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    // URL del frontend para el enlace de recuperación (ajusta si es necesario)
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     // Endpoint para registrar un nuevo usuario
     @PostMapping("/registro")
@@ -48,6 +54,28 @@ public class UserController {
             }
         } else {
             return ResponseEntity.status(401).body("Credenciales incorrectas");
+        }
+    }
+
+    // Endpoint para solicitar recuperación de contraseña
+    @PostMapping("/recuperar")
+    public ResponseEntity<?> solicitarRecuperacion(@RequestBody Map<String, String> request) {
+        String correo = request.get("correo");
+        userService.createPasswordResetToken(correo, frontendUrl);
+        // Por seguridad, siempre responde igual aunque el correo no exista
+        return ResponseEntity.ok("Correo de recuperación enviado si el usuario existe.");
+    }
+
+    // Endpoint para cambiar la contraseña usando el token
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String nuevaContraseña = request.get("nuevaContraseña");
+        boolean result = userService.resetPassword(token, nuevaContraseña);
+        if (result) {
+            return ResponseEntity.ok("Contraseña actualizada correctamente.");
+        } else {
+            return ResponseEntity.badRequest().body("Token inválido o expirado.");
         }
     }
 }
