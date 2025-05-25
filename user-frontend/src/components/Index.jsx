@@ -4,7 +4,6 @@ import CarruselComponent from "./CarruselComponent"; // Asegúrate de que este c
 function Index() {
   return (
     <>
-      <MainHeader />
       <CarruselComponent />
       <div className="max-w-3xl mx-auto mt-20 text-center px-4">
         <h1 className="text-5xl font-bold mb-4">Bienvenido a EstiloYa</h1>

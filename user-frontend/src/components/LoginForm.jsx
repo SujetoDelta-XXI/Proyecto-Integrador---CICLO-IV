@@ -22,8 +22,17 @@ function LoginForm() {
       });
 
       if (response.ok) {
-        alert("Login exitoso");
-        navigate("/");
+        // Espera un JSON con la información del usuario
+        const data = await response.json();
+
+        // Verifica si el backend indica que necesita configurar 2FA
+        if (data.necesita2FA) {
+          // Redirige a la pantalla de configuración de 2FA
+          navigate("/two-factor-setup");
+        } else {
+          alert("Login exitoso");
+          navigate("/");
+        }
       } else {
         alert("Credenciales incorrectas");
       }

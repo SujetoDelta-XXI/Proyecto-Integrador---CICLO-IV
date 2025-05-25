@@ -1,22 +1,26 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Header from "./components/Header";
 import Login from "./components/Login";
 import Footer from "./components/Footer";
 import Register from "./components/Register";
 import LoginForm from "./components/LoginForm";
 import Index from "./components/Index";
+import TwoFactorSetup from "./components/TwoFactorSetup";
+import ShopGridPage from "./components/Producto/ShopGridPage";
 
 function App() {
   return (
     <Router>
-      <div className="main-container"> {/* Puedes añadir clases de Tailwind aquí si es necesario */}
+      <Header />
+      <div className="main-container">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/loginForm" element={<LoginForm />} />
+          <Route path="/two-factor-setup" element={<TwoFactorSetup />} />
+          <Route path="/productos" element={<ShopGridPage />} />
         </Routes>
       </div>
       <Footer />
