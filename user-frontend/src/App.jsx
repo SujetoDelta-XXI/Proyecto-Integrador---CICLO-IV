@@ -7,6 +7,9 @@ import Register from "./components/Register";
 import LoginForm from "./components/LoginForm";
 import Index from "./components/Index";
 import TwoFactorSetup from "./components/TwoFactorSetup";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+
 import ShopGridPage from "./components/Producto/ShopGridPage";
 
 function App() {
@@ -20,6 +23,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/loginForm" element={<LoginForm />} />
           <Route path="/two-factor-setup" element={<TwoFactorSetup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/productos" element={<ShopGridPage />} />
         </Routes>
       </div>
