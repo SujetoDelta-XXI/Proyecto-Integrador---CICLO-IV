@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function ResetPassword() {
   const [codigo, setCodigo] = useState("");
@@ -8,6 +8,16 @@ function ResetPassword() {
   const [error, setError] = useState("");
   const [exito, setExito] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Leer el token de la URL al cargar el componente
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (token) {
+      setCodigo(token);
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +32,23 @@ function ResetPassword() {
       return;
     }
 
-    // Aquí iría la llamada real al backend para cambiar la contraseña
-    // Por ahora solo mostramos el mensaje de éxito
-    setExito(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/usuarios/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: codigo,
+          nuevaContraseña: nuevaContraseña
+        }),
+      });
+      if (response.ok) {
+        setExito(true);
+      } else {
+        setError("El código es inválido o ha expirado.");
+      }
+    } catch  {
+      setError("Error de conexión con el servidor.");
+    }
   };
 
   return (

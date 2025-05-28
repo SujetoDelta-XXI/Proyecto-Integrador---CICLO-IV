@@ -8,7 +8,7 @@ function Login() {
         Inicia sesión con tu correo electrónico o regístrate
       </p>
       <div className="flex flex-col gap-4 mb-4">
-        <Link to="../loginForm" className="py-3 rounded-sm text-base cursor-pointer no-underline transition-colors duration-200 w-full text-center border border-gray-800 bg-white text-gray-800">
+        <Link to="/loginForm" className="py-3 rounded-sm text-base cursor-pointer no-underline transition-colors duration-200 w-full text-center border border-gray-800 bg-white text-gray-800">
           INICIAR SESIÓN
         </Link>
         <Link to="../register" className="py-3 rounded-sm text-base cursor-pointer no-underline transition-colors duration-200 w-full text-center border border-gray-800 bg-gray-900 text-white">
