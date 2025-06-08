@@ -16,10 +16,12 @@ function ProductCard({ name, price, oldPrice, rating, reviews, image, discount, 
       </div>
       <h4 className="mt-2 font-semibold">{name}</h4>
       <div className="flex items-center gap-2 mt-1">
-        <span className="text-lg font-bold text-indigo-600">${price}</span>
         {oldPrice && (
-          <span className="text-sm line-through text-gray-400">${oldPrice}</span>
+          <span className="text-sm line-through text-gray-400">S/{oldPrice}</span>
         )}
+        <span className={`text-lg font-bold ${oldPrice ? 'text-green-600' : 'text-indigo-600'}`}>
+          S/{price}
+        </span>
       </div>
       <div className="flex items-center gap-1 mt-1">
         <span className="text-yellow-400">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</span>

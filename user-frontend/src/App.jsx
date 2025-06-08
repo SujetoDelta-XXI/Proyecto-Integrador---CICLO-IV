@@ -9,7 +9,7 @@ import Index from "./components/Index";
 import TwoFactorSetup from "./components/TwoFactorSetup";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
-import ShopGridPage from "./components/Producto/ShopGridPage";
+import ProductoPage from "./Pages/ProductoPage";
 
 function App() {
   return (
@@ -24,7 +24,7 @@ function App() {
           <Route path="/two-factor-setup" element={<TwoFactorSetup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/productos" element={<ShopGridPage />} />
+          <Route path="/productos" element={<ProductoPage />} />
         </Routes>
       </div>
       <Footer />
