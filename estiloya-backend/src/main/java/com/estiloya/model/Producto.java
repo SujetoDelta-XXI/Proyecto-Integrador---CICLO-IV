@@ -7,6 +7,7 @@ import java.util.Date;
 @Entity
 @Table(name = "Productos")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProducto;
@@ -34,5 +35,49 @@ public class Producto {
 
     private String estado = "activo";
 
-    // Getters y Setters
+    // ✅ Getters
+    public Long getIdProducto() {
+        return idProducto;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public Marca getMarca() {
+        return marca;
+    }
+
+    public Descuento getDescuento() {
+        return descuento;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
 }
+

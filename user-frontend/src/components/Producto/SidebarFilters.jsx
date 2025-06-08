@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 
-function SidebarFilters({ search, setSearch, price, setPrice, selectedCategory, setSelectedCategory }) {
+function SidebarFilters({
+  search,
+  setSearch,
+  price,
+  setPrice,
+  selectedCategory,
+  setSelectedCategory,
+}) {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/categorias")
       .then((res) => res.json())
-      .then((data) => setCategories(data.map(c => c.nombre)))
+      .then((data) => {
+        const nombres = data.map((c) => c.nombre);
+        setCategories(nombres);
+      })
       .catch((err) => console.error("Error al cargar categorías", err));
   }, []);
 
@@ -28,16 +38,16 @@ function SidebarFilters({ search, setSearch, price, setPrice, selectedCategory, 
         <h3 className="font-semibold mb-2">Rango de Precio</h3>
         <input
           type="range"
-          min="50"
-          max="5000"
+          min="0"
+          max="200"
           value={price}
           onChange={(e) => setPrice(Number(e.target.value))}
           className="w-full mb-2"
         />
         <div className="flex justify-between text-sm">
-          <span>$50</span>
-          <span>${price}</span>
-          <span>$5000</span>
+          <span>S/0</span>
+          <span>S/{price}</span>
+          <span>S/200</span>
         </div>
       </div>
 

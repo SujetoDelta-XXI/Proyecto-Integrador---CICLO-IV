@@ -9,10 +9,23 @@ function ShopGridPage() {
   const [productos, setProductos] = useState([]);
 
   useEffect(() => {
-    const categoriaParam = selectedCategory ? `&categoria=${encodeURIComponent(selectedCategory)}` : "";
-    fetch(`http://localhost:8080/api/productos/buscar?nombre=${search}&precioMax=${price}${categoriaParam}`)
+    const categoriaParam = selectedCategory
+      ? `&categoria=${encodeURIComponent(selectedCategory)}`
+      : "";
+    fetch(
+      `http://localhost:8080/api/productos/buscar?nombre=${search}&precioMax=10000${categoriaParam}`
+    )
       .then((res) => res.json())
-      .then((data) => setProductos(data))
+      .then((data) => {
+        const productosFiltrados = data.filter((product) => {
+          const precioOriginal = product.precio;
+          const descuento = product.descuento || 0;
+          const precioFinal =
+            precioOriginal - (precioOriginal * descuento) / 100;
+          return precioFinal <= price;
+        });
+        setProductos(productosFiltrados);
+      })
       .catch((err) => console.error("Error al cargar productos", err));
   }, [search, price, selectedCategory]);
 
@@ -31,27 +44,33 @@ function ShopGridPage() {
       <main className="w-full md:w-3/4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Shop Grid</h2>
-          <select className="border rounded px-2 py-1">
-            <option>Sort by: Popularity</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-          </select>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {productos.length > 0 ? (
-            productos.map((product) => (
-              <ProductCard
-                key={product.id}
-                name={product.nombre}
-                price={product.precio}
-                oldPrice={null}
-                rating={5}
-                reviews={5}
-                image={`/images/${product.imagen}`}
-                discount={product.descuento}
-                isNew={false}
-              />
-            ))
+            productos.map((product) => {
+              const precioOriginal = product.precio;
+              const tieneDescuento = product.descuento != null;
+              const precioConDescuento = tieneDescuento
+                ? (
+                    precioOriginal -
+                    (precioOriginal * product.descuento) / 100
+                  ).toFixed(2)
+                : null;
+
+              return (
+                <ProductCard
+                  key={product.id}
+                  name={product.nombre}
+                  price={precioConDescuento || precioOriginal}
+                  oldPrice={tieneDescuento ? precioOriginal : null}
+                  rating={5}
+                  reviews={5}
+                  image={product.imagen}
+                  discount={product.descuento}
+                  isNew={false}
+                />
+              );
+            })
           ) : (
             <div className="col-span-full text-center text-gray-500">
               No se encontraron productos.
