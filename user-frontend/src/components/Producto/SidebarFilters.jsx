@@ -1,13 +1,14 @@
-function SidebarFilters({ search, setSearch, price, setPrice }) {
-  const categories = [
-    "Polos Personalizados (1200)",
-    "Poleras con Estampado (950)",
-    "Diseños Exclusivos (680)",
-    "Parejas y Amigos (430)",
-    "Frases Divertidas (510)",
-    "Diseños Anime & Geek (770)",
-    "Tallas Plus & Oversize (390)",
-  ];
+import { useEffect, useState } from "react";
+
+function SidebarFilters({ search, setSearch, price, setPrice, selectedCategory, setSelectedCategory }) {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/categorias")
+      .then((res) => res.json())
+      .then((data) => setCategories(data.map(c => c.nombre)))
+      .catch((err) => console.error("Error al cargar categorías", err));
+  }, []);
 
   return (
     <div className="bg-white rounded shadow p-4">
@@ -45,7 +46,13 @@ function SidebarFilters({ search, setSearch, price, setPrice }) {
         <h3 className="font-semibold mb-2">Categorías</h3>
         <ul>
           {categories.map((cat, idx) => (
-            <li key={idx} className="mb-1 text-gray-700">
+            <li
+              key={idx}
+              className={`mb-1 cursor-pointer text-sm px-2 py-1 rounded ${
+                selectedCategory === cat ? "bg-indigo-200" : "hover:bg-gray-100"
+              }`}
+              onClick={() => setSelectedCategory(cat)}
+            >
               {cat}
             </li>
           ))}

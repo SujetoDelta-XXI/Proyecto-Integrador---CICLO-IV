@@ -1,5 +1,4 @@
-import MainHeader from "./Header";
-import CarruselComponent from "./CarruselComponent"; // Asegúrate de que este componente no tenga CSS propio o lo conviertas a Tailwind
+import CarruselComponent from "./CarruselComponent";
 
 function Index() {
   return (
