@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class CategoriaController {
 
     private final CategoriaRepository categoriaRepository;
@@ -19,6 +19,6 @@ public class CategoriaController {
 
     @GetMapping
     public List<Categoria> listarCategorias() {
-        return categoriaRepository.findAll();
+        return categoriaRepository.findAll(); // ✅ Esto devuelve JSON
     }
 }

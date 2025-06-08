@@ -2,6 +2,8 @@ package com.estiloya.model;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "Categorias")
@@ -43,6 +45,7 @@ public class Categoria {
         this.descripcion = descripcion;
     }
 
+    @JsonIgnore
     public List<Producto> getProductos() {
         return productos;
     }

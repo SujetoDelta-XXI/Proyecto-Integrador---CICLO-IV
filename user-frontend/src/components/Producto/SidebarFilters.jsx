@@ -21,7 +21,7 @@ function SidebarFilters({
   }, []);
 
   return (
-    <div className="bg-white rounded shadow p-4">
+    <div className="bg-white rounded shadow p-4 sticky top-30">
       {/* Buscador */}
       <div className="mb-4">
         <input
@@ -61,7 +61,9 @@ function SidebarFilters({
               className={`mb-1 cursor-pointer text-sm px-2 py-1 rounded ${
                 selectedCategory === cat ? "bg-indigo-200" : "hover:bg-gray-100"
               }`}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() =>
+                setSelectedCategory(selectedCategory === cat ? "" : cat)
+              }
             >
               {cat}
             </li>

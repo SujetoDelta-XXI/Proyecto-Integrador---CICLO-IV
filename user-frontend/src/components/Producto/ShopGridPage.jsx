@@ -4,7 +4,7 @@ import ProductCard from "./ProductCard";
 
 function ShopGridPage() {
   const [search, setSearch] = useState("");
-  const [price, setPrice] = useState(500);
+  const [price, setPrice] = useState(200);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [productos, setProductos] = useState([]);
 
@@ -13,7 +13,7 @@ function ShopGridPage() {
       ? `&categoria=${encodeURIComponent(selectedCategory)}`
       : "";
     fetch(
-      `http://localhost:8080/api/productos/buscar?nombre=${search}&precioMax=10000${categoriaParam}`
+      `http://localhost:8080/api/productos/buscar?nombre=${search}&precioMax=200${categoriaParam}`
     )
       .then((res) => res.json())
       .then((data) => {
