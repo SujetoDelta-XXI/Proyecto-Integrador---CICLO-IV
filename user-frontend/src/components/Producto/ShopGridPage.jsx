@@ -52,14 +52,15 @@ function ShopGridPage() {
               const tieneDescuento = product.descuento != null;
               const precioConDescuento = tieneDescuento
                 ? (
-                    precioOriginal -
-                    (precioOriginal * product.descuento) / 100
-                  ).toFixed(2)
+                  precioOriginal -
+                  (precioOriginal * product.descuento) / 100
+                ).toFixed(2)
                 : null;
 
               return (
                 <ProductCard
                   key={product.id}
+                  id={product.id}
                   name={product.nombre}
                   price={precioConDescuento || precioOriginal}
                   oldPrice={tieneDescuento ? precioOriginal : null}
@@ -69,6 +70,7 @@ function ShopGridPage() {
                   discount={product.descuento}
                   isNew={false}
                 />
+
               );
             })
           ) : (

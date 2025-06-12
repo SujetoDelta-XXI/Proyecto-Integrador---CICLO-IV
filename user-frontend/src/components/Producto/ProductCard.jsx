@@ -1,4 +1,27 @@
-function ProductCard({ name, price, oldPrice, rating, reviews, image, discount, isNew }) {
+function ProductCard({ id, name, price, oldPrice, rating, reviews, image, discount, isNew }) {
+  const handleAgregarAlCarrito = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/detalle-carrito/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carrito: 1, // ID de carrito simulado (fijo por ahora)
+          producto: id,
+          producto_personalizado: null,
+          cantidad: 1,
+        }),
+      });
+
+      if (response.ok) {
+        alert("✅ Producto agregado al carrito");
+      } else {
+        alert("❌ Error al agregar al carrito");
+      }
+    } catch (error) {
+      console.error("❌ Error:", error);
+    }
+  };
+
   return (
     <div className="bg-white rounded shadow p-4 flex flex-col">
       <div className="relative">
@@ -23,10 +46,18 @@ function ProductCard({ name, price, oldPrice, rating, reviews, image, discount, 
           S/{price}
         </span>
       </div>
-      <div className="flex items-center gap-1 mt-1">
+      <div className="flex items-center gap-1 mt-1 mb-2">
         <span className="text-yellow-400">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</span>
         <span className="text-xs text-gray-500">{reviews}.0 Review(s)</span>
       </div>
+
+      {/* Nuevo botón para agregar al carrito */}
+      <button
+        onClick={handleAgregarAlCarrito}
+        className="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded transition"
+      >
+        🛒 Agregar al carrito
+      </button>
     </div>
   );
 }
