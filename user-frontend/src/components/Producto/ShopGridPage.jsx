@@ -5,14 +5,10 @@ import ProductCard from "./ProductCard";
 function ShopGridPage() {
   const [search, setSearch] = useState("");
   const [price, setPrice] = useState(200);
-  const [selectedCategory, setSelectedCategory] = useState(""); // ← ID o ""
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [productos, setProductos] = useState([]);
 
-  // ─────────────────────────────────────────────────────────────
-  // Carga y filtrado
-  // ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Si hay categoría, pásala como query param (?categoria=5)
     const categoriaParam =
       selectedCategory !== "" ? `&categoria=${selectedCategory}` : "";
 
@@ -23,7 +19,6 @@ function ShopGridPage() {
     )
       .then((res) => res.json())
       .then((data) => {
-        // Filtra nuevamente en el front por si cambia el slider
         const filtrados = data.filter((p) => {
           const precioOriginal = p.precio;
           const porcentaje = p.descuento?.porcentaje || 0;
@@ -36,12 +31,36 @@ function ShopGridPage() {
       .catch((err) => console.error("Error al cargar productos", err));
   }, [search, price, selectedCategory]);
 
-  // ─────────────────────────────────────────────────────────────
-  // Render
-  // ─────────────────────────────────────────────────────────────
+  // Función para agregar al carrito
+  function handleAgregarAlCarrito(producto) {
+    const carritoId = 1; // ID de carrito simulado
+    const productoId = producto.id;
+    const cantidad = 1;
+
+    fetch("http://localhost:8086/api/detalle-carrito/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        carrito: carritoId,
+        producto: productoId,
+        cantidad: cantidad,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al agregar al carrito");
+        return res.json();
+      })
+      .then(() => {
+        alert("✅ Producto agregado al carrito.");
+      })
+      .catch((err) => {
+        console.error("❌ Error al agregar producto:", err);
+        alert("⚠️ No se pudo agregar al carrito.");
+      });
+  }
+
   return (
     <div className="container mx-auto flex flex-col md:flex-row gap-6 py-8 px-4">
-      {/* ---------- Lateral de filtros ---------- */}
       <aside className="w-full md:w-1/4 mb-6 md:mb-0">
         <SidebarFilters
           search={search}
@@ -53,7 +72,6 @@ function ShopGridPage() {
         />
       </aside>
 
-      {/* ---------- Grilla de productos ---------- */}
       <main className="w-full md:w-3/4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Shop Grid</h2>
@@ -84,8 +102,8 @@ function ShopGridPage() {
                   discount={porcentaje}
                   category={p.categoria?.nombre || ""}
                   isNew={false}
+                  onAddToCart={() => handleAgregarAlCarrito(p)}
                 />
-
               );
             })
           ) : (
