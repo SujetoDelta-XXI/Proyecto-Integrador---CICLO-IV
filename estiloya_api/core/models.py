@@ -14,8 +14,16 @@ class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.id} – {self.nombre}"
+
+
 class Descuento(models.Model):
     porcentaje = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.id} – {self.porcentaje}%"
+
 
 class Producto(models.Model):
     nombre = models.CharField(max_length=100)
