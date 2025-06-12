@@ -11,7 +11,7 @@ function SidebarFilters({
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/categorias")
+    fetch("http://localhost:8086/api/categorias")
       .then((res) => res.json())
       .then((data) => {
         const nombres = data.map((c) => c.nombre);

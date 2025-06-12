@@ -9,17 +9,40 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
-        fields = '__all__'
+        fields = '__all__'          # → solo lo que quieras exponer
 
 class DescuentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Descuento
-        fields = '__all__'
+        fields = ["id", "porcentaje"]
+
+# ----------  Producto  ----------
 
 class ProductoSerializer(serializers.ModelSerializer):
+    # 1)  Campos solo-lectura con el objeto completo
+    categoria  = CategoriaSerializer(read_only=True)
+    descuento  = DescuentoSerializer(read_only=True)
+
+    # 2)  Campos solo-escritura que aceptan el ID
+    categoria_id = serializers.PrimaryKeyRelatedField(
+        source="categoria", queryset=Categoria.objects.all(),
+        write_only=True
+    )
+    descuento_id = serializers.PrimaryKeyRelatedField(
+        source="descuento", queryset=Descuento.objects.all(),
+        allow_null=True, write_only=True
+    )
+
     class Meta:
-        model = Producto
-        fields = '__all__'
+        model  = Producto
+        #            ↓↓↓ se exponen los “nombres oficiales”
+        fields = [
+            "id", "nombre", "descripcion", "imagen",
+            "precio", "stock", "tipo",
+            "categoria", "categoria_id",      # objeto y id
+            "descuento", "descuento_id",      # objeto y id
+            "fecha_creacion", "estado",
+        ]
 
 class ImagenProductoSerializer(serializers.ModelSerializer):
     class Meta:

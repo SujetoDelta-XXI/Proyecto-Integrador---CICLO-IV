@@ -1,25 +1,31 @@
 package com.estiloya.dto;
 
+import com.estiloya.model.Categoria;
+import com.estiloya.model.Marca;
+import com.estiloya.model.Descuento;
+
 import java.math.BigDecimal;
 
 public class ProductoDTO {
+
+    // ────────── Atributos ──────────
     private Long id;
     private String nombre;
     private String descripcion;
     private String imagen;
     private BigDecimal precio;
     private int stock;
-    private String categoria;
-    private String marca;
-    private Integer descuento;
+    private Categoria categoria;
+    private Marca marca;
+    private Descuento descuento;   // puede ser null
 
-    // Constructor vacío
+    // ────────── Constructores ──────────
     public ProductoDTO() {
     }
 
-    // Constructor completo
     public ProductoDTO(Long id, String nombre, String descripcion, String imagen,
-                       BigDecimal precio, int stock, String categoria, String marca, Integer descuento) {
+                       BigDecimal precio, int stock,
+                       Categoria categoria, Marca marca, Descuento descuento) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -31,12 +37,10 @@ public class ProductoDTO {
         this.descuento = descuento;
     }
 
-    // Getters y Setters
-
+    // ────────── Getters & Setters ──────────
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -44,7 +48,6 @@ public class ProductoDTO {
     public String getNombre() {
         return nombre;
     }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
@@ -52,7 +55,6 @@ public class ProductoDTO {
     public String getDescripcion() {
         return descripcion;
     }
-
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
@@ -60,7 +62,6 @@ public class ProductoDTO {
     public String getImagen() {
         return imagen;
     }
-
     public void setImagen(String imagen) {
         this.imagen = imagen;
     }
@@ -68,7 +69,6 @@ public class ProductoDTO {
     public BigDecimal getPrecio() {
         return precio;
     }
-
     public void setPrecio(BigDecimal precio) {
         this.precio = precio;
     }
@@ -76,33 +76,28 @@ public class ProductoDTO {
     public int getStock() {
         return stock;
     }
-
     public void setStock(int stock) {
         this.stock = stock;
     }
 
-    public String getCategoria() {
+    public Categoria getCategoria() {
         return categoria;
     }
-
-    public void setCategoria(String categoria) {
+    public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
 
-    public String getMarca() {
+    public Marca getMarca() {
         return marca;
     }
-
-    public void setMarca(String marca) {
+    public void setMarca(Marca marca) {
         this.marca = marca;
     }
 
-    public Integer getDescuento() {
+    public Descuento getDescuento() {
         return descuento;
     }
-
-    public void setDescuento(Integer descuento) {
+    public void setDescuento(Descuento descuento) {
         this.descuento = descuento;
     }
 }
-
