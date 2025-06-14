@@ -1,3 +1,4 @@
+
 function ProductCard({
   name,
   price,
@@ -8,14 +9,13 @@ function ProductCard({
   discount = 0,
   isNew = false,
   category = "",
-  onAddToCart, // nueva prop
+  onAddToCart,
 }) {
   const filled = "★".repeat(rating);
   const empty = "☆".repeat(5 - rating);
 
   return (
     <div className="bg-white rounded shadow p-4 flex flex-col">
-      {/* Imagen + Badges */}
       <div className="relative">
         <img
           src={image || "/placeholder.png"}
@@ -33,16 +33,12 @@ function ProductCard({
           </span>
         )}
       </div>
-
-      {/* Nombre y categoría */}
       <h4 className="mt-2 font-semibold line-clamp-2">{name}</h4>
       {category && (
         <span className="text-xs text-gray-500 uppercase tracking-wide">
           {category}
         </span>
       )}
-
-      {/* Precios */}
       <div className="flex items-center gap-2 mt-1">
         {oldPrice && (
           <span className="text-sm line-through text-gray-400">
@@ -57,16 +53,12 @@ function ProductCard({
           S/{price}
         </span>
       </div>
-
-      {/* Rating */}
       <div className="flex items-center gap-1 mt-1">
         <span className="text-yellow-400">{filled}{empty}</span>
         <span className="text-xs text-gray-500">
           {reviews}.0&nbsp;Review{reviews !== 1 && "s"}
         </span>
       </div>
-
-      {/* Botón */}
       <button
         onClick={onAddToCart}
         className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded transition"

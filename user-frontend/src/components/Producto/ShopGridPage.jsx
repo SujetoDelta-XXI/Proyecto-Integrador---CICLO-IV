@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import SidebarFilters from "./SidebarFilters";
 import ProductCard from "./ProductCard";
+import handleAgregarAlCarrito from "./handleAgregarAlCarrito"; 
 
 function ShopGridPage() {
   const [search, setSearch] = useState("");
@@ -30,34 +31,6 @@ function ShopGridPage() {
       })
       .catch((err) => console.error("Error al cargar productos", err));
   }, [search, price, selectedCategory]);
-
-  // Función para agregar al carrito
-  function handleAgregarAlCarrito(producto) {
-    const carritoId = 1; // ID de carrito simulado
-    const productoId = producto.id;
-    const cantidad = 1;
-
-    fetch("http://localhost:8086/api/detalle-carrito/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        carrito: carritoId,
-        producto: productoId,
-        cantidad: cantidad,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al agregar al carrito");
-        return res.json();
-      })
-      .then(() => {
-        alert("✅ Producto agregado al carrito.");
-      })
-      .catch((err) => {
-        console.error("❌ Error al agregar producto:", err);
-        alert("⚠️ No se pudo agregar al carrito.");
-      });
-  }
 
   return (
     <div className="container mx-auto flex flex-col md:flex-row gap-6 py-8 px-4">
@@ -92,7 +65,7 @@ function ShopGridPage() {
 
               return (
                 <ProductCard
-                  key={p.id}
+                  key={p.id_producto || p.id}
                   name={p.nombre}
                   price={precioFinal}
                   oldPrice={tieneDescuento ? precioOriginal : null}

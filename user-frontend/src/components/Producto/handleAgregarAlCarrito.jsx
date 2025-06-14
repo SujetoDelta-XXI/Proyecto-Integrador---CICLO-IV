@@ -1,7 +1,9 @@
-function handleAgregarAlCarrito(producto) {
-  const productoId = producto.id;
+
+export default function handleAgregarAlCarrito(producto) {
+  // Considera que en tu BD el campo es id_producto, pero en tu API p.id puede ser id o id_producto, revisa y ajusta según sea necesario
+  const productoId = producto.id_producto || producto.id;
   const cantidad = 1;
-  const carritoId = 1; // Simulado
+  const carritoId = 1; // HARDCODEADO, cámbialo por el real cuando lo tengas
 
   fetch("http://localhost:8086/api/detalle-carrito/", {
     method: "POST",
