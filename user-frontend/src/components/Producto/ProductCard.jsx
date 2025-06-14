@@ -8,26 +8,25 @@ function ProductCard({
   discount = 0,
   isNew = false,
   category = "",
+  onAddToCart, // nueva prop
 }) {
   const filled = "★".repeat(rating);
-  const empty  = "☆".repeat(5 - rating);
+  const empty = "☆".repeat(5 - rating);
 
   return (
     <div className="bg-white rounded shadow p-4 flex flex-col">
-      {/* ---------- Imagen + Badges ---------- */}
+      {/* Imagen + Badges */}
       <div className="relative">
         <img
           src={image || "/placeholder.png"}
           alt={name}
           className="w-full h-40 object-cover rounded"
         />
-
         {discount > 0 && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
             -{discount}%
           </span>
         )}
-
         {isNew && (
           <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
             New
@@ -35,7 +34,7 @@ function ProductCard({
         )}
       </div>
 
-      {/* ---------- Nombre y categoría ---------- */}
+      {/* Nombre y categoría */}
       <h4 className="mt-2 font-semibold line-clamp-2">{name}</h4>
       {category && (
         <span className="text-xs text-gray-500 uppercase tracking-wide">
@@ -43,7 +42,7 @@ function ProductCard({
         </span>
       )}
 
-      {/* ---------- Precios ---------- */}
+      {/* Precios */}
       <div className="flex items-center gap-2 mt-1">
         {oldPrice && (
           <span className="text-sm line-through text-gray-400">
@@ -59,21 +58,18 @@ function ProductCard({
         </span>
       </div>
 
-      {/* ---------- Rating ---------- */}
+      {/* Rating */}
       <div className="flex items-center gap-1 mt-1">
-        <span className="text-yellow-400">
-          {filled}
-          {empty}
-        </span>
+        <span className="text-yellow-400">{filled}{empty}</span>
         <span className="text-xs text-gray-500">
           {reviews}.0&nbsp;Review{reviews !== 1 && "s"}
         </span>
       </div>
 
-      {/* Nuevo botón para agregar al carrito */}
+      {/* Botón */}
       <button
-        onClick={handleAgregarAlCarrito}
-        className="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded transition"
+        onClick={onAddToCart}
+        className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded transition"
       >
         🛒 Agregar al carrito
       </button>
