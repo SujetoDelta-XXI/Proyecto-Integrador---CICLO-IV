@@ -1,6 +1,7 @@
 # store/models.py
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.hashers import make_password
 
 class Usuario(models.Model):
     ROL_CHOICES = [
@@ -19,6 +20,12 @@ class Usuario(models.Model):
 
     class Meta:
         db_table = "usuarios"
+
+    def save(self, *args, **kwargs):
+        # Si la contraseña no parece ya hasheada (pbkdf2_… u otro), la hasheamos:
+        if self.contraseña and not self.contraseña.startswith("pbkdf2_"):
+            self.contraseña = make_password(self.contraseña)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nombre} {self.apellidos} ({self.rol})"
