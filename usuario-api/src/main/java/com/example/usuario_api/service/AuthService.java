@@ -1,0 +1,169 @@
+// src/main/java/com/example/usuario_api/service/AuthService.java
+package com.example.usuario_api.service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Map;
+
+import java.util.UUID;
+
+import com.example.usuario_api.model.PasswordResetToken;
+import com.example.usuario_api.model.Usuario;
+import com.example.usuario_api.payload.SignupRequest;
+import com.example.usuario_api.payload.response.Login2FaResponse;
+import com.example.usuario_api.repository.PasswordResetTokenRepository;
+import com.example.usuario_api.repository.UsuarioRepository;
+import com.example.usuario_api.security.GoogleVerifier;
+import com.example.usuario_api.security.JwtUtils;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+
+    private final UsuarioRepository             usuarioRepo;
+    private final PasswordEncoder               passwordEncoder;
+    private final JwtUtils                      jwtUtils;
+    private final PasswordResetTokenRepository  tokenRepo;
+    private final EmailService                  emailService;
+    private final OtpService                    otpService;
+    private final GoogleVerifier                googleVerifier;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
+    public AuthService(
+        UsuarioRepository usuarioRepo,
+        PasswordEncoder passwordEncoder,
+        JwtUtils jwtUtils,
+        PasswordResetTokenRepository tokenRepo,
+        EmailService emailService,
+        OtpService otpService,
+        GoogleVerifier googleVerifier
+    ) {
+        this.usuarioRepo    = usuarioRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils       = jwtUtils;
+        this.tokenRepo      = tokenRepo;
+        this.emailService   = emailService;
+        this.otpService     = otpService;
+        this.googleVerifier = googleVerifier;
+    }
+
+    /** 1) Registro de usuario */
+    public boolean register(SignupRequest dto) {
+        if (usuarioRepo.existsByCorreo(dto.getCorreo())) {
+            return false;
+        }
+        Usuario u = new Usuario();
+        u.setNombre(dto.getNombre());
+        u.setApellidos(dto.getApellidos());
+        u.setCorreo(dto.getCorreo());
+        u.setContraseña(passwordEncoder.encode(dto.getContraseña()));
+        u.setTelefono(dto.getTelefono());
+        u.setFecha_registro(LocalDate.now());
+        u.setRol("USER");
+        u.setTiene_2fa((short)0);
+        usuarioRepo.save(u);
+        return true;
+    }
+
+    /** 2) Login tradicional → inicia 2-FA si aplica */
+    public Login2FaResponse login(String correo, String rawPassword) {
+        Usuario u = usuarioRepo.findByCorreo(correo)
+            .filter(us -> passwordEncoder.matches(rawPassword, us.getContraseña()))
+            .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
+
+        if (u.getTiene_2fa() == 0) {
+            return new Login2FaResponse(
+                true,
+                Map.of("correo", u.getCorreo_auth() != null),
+                correo
+            );
+        }
+
+        otpService.generateAndSendCode(correo, u.getCorreo_auth());
+        return new Login2FaResponse(true, Map.of("correo", true), correo);
+    }
+
+    /** 3) Verificar código 2-FA y devolver JWT */
+    public String verify2Fa(String correo, String code) {
+        if (!otpService.verify(correo, code)) {
+            throw new IllegalArgumentException("Código 2FA inválido");
+        }
+        Usuario u = usuarioRepo.findByCorreo(correo).orElseThrow();
+        return jwtUtils.generateJwtToken(u);
+    }
+
+    /** 4) Registrar correo alternativo para 2-FA */
+    public void register2FaEmail(String correo, String alternativo) {
+        Usuario u = usuarioRepo.findByCorreo(correo)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+        u.setCorreo_auth(alternativo);
+        u.setTiene_2fa((short)1);
+        usuarioRepo.save(u);
+    }
+
+    /** 5a) Olvidé mi contraseña: generar token y enviar email */
+    public void forgotPassword(String correo) {
+        Usuario u = usuarioRepo.findByCorreo(correo)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken pr = new PasswordResetToken();
+        pr.setToken(token);
+        pr.setExpiresAt(LocalDateTime.now().plusHours(24));
+        pr.setUsuario(u);
+        tokenRepo.save(pr);
+        emailService.sendSimpleMessage(
+    u.getCorreo(),
+    "Restablecimiento de contraseña",
+    "Haz clic en el siguiente enlace para restablecer tu contraseña:\n" +
+    frontendUrl + "/reset-password?token=" + token
+);
+
+    }
+
+    /** 5b) Restablecer contraseña */
+    public void resetPassword(String token, String nueva) {
+        PasswordResetToken pr = tokenRepo.findByToken(token)
+            .filter(t -> t.getExpiresAt().isAfter(LocalDateTime.now()))
+            .orElseThrow(() -> new IllegalArgumentException("Token inválido o expirado"));
+
+        Usuario u = pr.getUsuario();
+        u.setContraseña(passwordEncoder.encode(nueva));
+        usuarioRepo.save(u);
+        tokenRepo.delete(pr);
+    }
+
+    /** 6) Login con Google */
+    public String loginGoogle(String googleToken) {
+        GoogleIdToken.Payload payload = googleVerifier.verify(googleToken);
+        String correo = payload.getEmail();
+
+        if (!correo.endsWith("@tecsup.edu.pe")) {
+            throw new IllegalArgumentException("Solo cuentas @tecsup.edu.pe");
+        }
+
+        Usuario u = usuarioRepo.findByCorreo(correo)
+            .orElseGet(() -> {
+                Usuario nuevo = new Usuario();
+                nuevo.setCorreo(correo);
+                nuevo.setNombre((String) payload.get("given_name"));
+                nuevo.setApellidos((String) payload.get("family_name"));
+                nuevo.setContraseña(passwordEncoder.encode(UUID.randomUUID().toString()));
+                nuevo.setRol("USER");
+                nuevo.setFecha_registro(LocalDate.now());
+                nuevo.setTiene_2fa((short)0);
+                return usuarioRepo.save(nuevo);
+            });
+
+        return jwtUtils.generateJwtToken(u);
+    }
+}
+
+
+
