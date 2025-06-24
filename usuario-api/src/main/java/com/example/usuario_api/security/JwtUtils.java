@@ -36,16 +36,19 @@ public class JwtUtils {
      * Genera el JWT firmándolo con HS256 (o HS512 si cambias el algoritmo).
      */
     public String generateJwtToken(Usuario user) {
-        Date now    = new Date();
-        Date exp    = new Date(now.getTime() + jwtExpirationMs);
-        return Jwts.builder()
-                   .setSubject(user.getCorreo())
-                   .claim("rol", user.getRol())
-                   .setIssuedAt(now)
-                   .setExpiration(exp)
-                   .signWith(key(), SignatureAlgorithm.HS256)
-                   .compact();
-    }
+    Date now = new Date();
+    Date exp = new Date(now.getTime() + jwtExpirationMs);
+
+    return Jwts.builder()
+        .setSubject(String.valueOf(user.getId())) // Usamos el ID como subject
+        .claim("correo", user.getCorreo())
+        .claim("rol", user.getRol())
+        .setIssuedAt(now)
+        .setExpiration(exp)
+        .signWith(key(), SignatureAlgorithm.HS256)
+        .compact();
+}
+
 
     /**
      * Valida la firma y la caducidad.

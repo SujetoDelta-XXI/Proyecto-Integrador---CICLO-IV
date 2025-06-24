@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.usuario_api.dto.ResumenCompraDto;
 import com.example.usuario_api.model.Carrito;
 import com.example.usuario_api.model.DetalleCarrito;
 import com.example.usuario_api.repository.CarritoRepository;
@@ -72,5 +73,45 @@ public class CarritoService {
                 detalleRepo.save(item);
             });
     }
+public ResumenCompraDto calcularResumen(Long usuarioId) {
+    List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
+
+    double subtotal = items.stream()
+        .mapToDouble(i -> {
+            double precio = i.getProducto().getPrecio().doubleValue();
+            double descuento = (i.getProducto().getDescuento() != null)
+                ? precio * i.getProducto().getDescuento().getPorcentaje().doubleValue() / 100
+                : 0;
+            return (precio - descuento) * i.getCantidad();
+        })
+        .sum();
+
+    double igv = subtotal * 0.18;
+    double envio = 10.0;
+    double total = subtotal + igv + envio;
+
+    ResumenCompraDto dto = new ResumenCompraDto();
+    dto.setSubtotal(subtotal);
+    dto.setIgv(igv);
+    dto.setEnvio(envio);
+    dto.setTotal(total);
+    return dto;
+}
+@Transactional
+public void finalizarCompra(Long usuarioId) {
+    List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
+
+    if (items.isEmpty()) {
+        throw new IllegalStateException("No hay productos en el carrito");
+    }
+
+    // Aquí podrías registrar un pedido si lo deseas (tabla Pedido, etc.)
+
+    // Vaciar el carrito
+    detalleRepo.deleteAll(items);
+}
+
+
+
 }
 

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.usuario_api.dto.CarritoItemDto;
+import com.example.usuario_api.dto.ResumenCompraDto;
 import com.example.usuario_api.mapper.CarritoMapper;
 import com.example.usuario_api.service.CarritoService;
 
@@ -57,4 +58,17 @@ public class CarritoController {
         service.actualizarCantidad(userId, input.getProductoId(), input.getCantidad());
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/resumen")
+public ResumenCompraDto resumenCompra(Principal principal) {
+    Long userId = Long.valueOf(principal.getName());
+    return service.calcularResumen(userId);
+}
+@PostMapping("/finalizar")
+public ResponseEntity<?> finalizarCompra(Principal principal) {
+    Long userId = Long.valueOf(principal.getName());
+    service.finalizarCompra(userId);
+    return ResponseEntity.ok("Compra finalizada exitosamente");
+}
+
+
 }

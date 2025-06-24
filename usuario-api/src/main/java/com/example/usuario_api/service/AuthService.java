@@ -80,22 +80,41 @@ public Login2FaResponse login(String correo, String rawPassword) {
         .filter(us -> passwordEncoder.matches(rawPassword, us.getContraseña()))
         .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
 
-    // Generar token JWT para el usuario (aunque aún no verifique el código 2FA)
-    String jwt = jwtUtils.generateJwtToken(u); // ✅ correcto
+    // Generar token temporal
+    String jwt = jwtUtils.generateJwtToken(u);
 
+    // Establecer token temporal en el contexto de seguridad
+    Authentication authSpring = new UsernamePasswordAuthenticationToken(
+        String.valueOf(u.getId()), null, List.of()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authSpring);
 
-    // Map de métodos disponibles
-    Map<String, Boolean> metodos = Map.of("correo", u.getCorreo_auth() != null);
+    // Detectar métodos
+    boolean tieneCorreo = u.getCorreo_auth() != null;
+    boolean tieneTelefono = u.getTelefono() != null;
 
-    // Si aún no tiene activado 2FA
+    Map<String, Boolean> metodos = Map.of(
+        "correo", tieneCorreo,
+        "sms", tieneTelefono
+    );
+
     if (u.getTiene_2fa() == 0) {
+        // 🔴 Si no tiene 2FA y NO tiene correo alternativo → enviar a configuración
+        if (!tieneCorreo) {
+            return new Login2FaResponse(true, metodos, correo, jwt);
+        }
+
+        // 🔵 Si no tiene 2FA pero sí tiene correo alternativo → enviar a verificar
+        otpService.generateAndSendCode(correo, u.getCorreo_auth());
         return new Login2FaResponse(true, metodos, correo, jwt);
     }
 
-    // Si ya tiene activado el 2FA
+    // ✅ Si ya tiene 2FA → enviar a verificar directamente
     otpService.generateAndSendCode(correo, u.getCorreo_auth());
-    return new Login2FaResponse(true, Map.of("correo", true), correo, jwt);
+    return new Login2FaResponse(true, metodos, correo, jwt);
 }
+
+
 
 
     /** 3) Verificar código 2-FA y devolver JWT */
@@ -103,17 +122,25 @@ public Login2FaResponse login(String correo, String rawPassword) {
     if (!otpService.verify(correo, code)) {
         throw new IllegalArgumentException("Código 2FA inválido");
     }
+
     Usuario u = usuarioRepo.findByCorreo(correo).orElseThrow();
+
+    // ✅ Activar 2FA si aún no está activado
+    if (u.getTiene_2fa() == 0) {
+        u.setTiene_2fa((short) 1);
+        usuarioRepo.save(u);
+    }
 
     Authentication auth = new UsernamePasswordAuthenticationToken(
         String.valueOf(u.getId()),
         null,
-        List.of()  // Puedes usar roles aquí si estás usando Spring Security con roles
+        List.of()
     );
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    return jwtUtils.generateJwtToken(u);
+    return jwtUtils.generateJwtToken(u); // ✅ Token post-verificación
 }
+
 
 
     /** 4) Registrar correo alternativo para 2-FA */

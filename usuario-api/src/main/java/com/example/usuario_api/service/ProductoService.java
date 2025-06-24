@@ -20,18 +20,21 @@ public class ProductoService {
     }
 
     public Page<Producto> listar(
-        Optional<Long> categoriaId,
-        Optional<BigDecimal> minPrecio,
-        Optional<BigDecimal> maxPrecio,
-        Pageable pageable
-    ) {
+    Optional<Long> categoriaId,
+    Optional<BigDecimal> minPrecio,
+    Optional<BigDecimal> maxPrecio,
+    Pageable pageable
+) {
+    BigDecimal min = minPrecio.orElse(BigDecimal.ZERO);
+    BigDecimal max = maxPrecio.orElse(BigDecimal.valueOf(Double.MAX_VALUE));
+
+    if (categoriaId.isPresent()) {
         return repo.findByCategoriaIdAndPrecioBetween(
-            categoriaId.orElse(null),
-            minPrecio.orElse(BigDecimal.ZERO),
-            maxPrecio.orElse(BigDecimal.valueOf(Double.MAX_VALUE)),
-            pageable
-        );
+            categoriaId.get(), min, max, pageable);
+    } else {
+        return repo.findByPrecioBetween(min, max, pageable); // ✅ Nuevo método
     }
+}
 
     public Optional<Producto> porId(Long id) {
         return repo.findById(id);

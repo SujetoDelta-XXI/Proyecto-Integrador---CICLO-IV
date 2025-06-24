@@ -14,7 +14,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import java.util.List;
 
 @Configuration
@@ -43,6 +42,10 @@ public class WebSecurityConfig {
           .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authorizeHttpRequests(auth -> auth
               .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/usuario/productos/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/usuario/categorias/**").permitAll()
+
+
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/me").authenticated() // ✅ permitido si tiene token
               .anyRequest().authenticated()

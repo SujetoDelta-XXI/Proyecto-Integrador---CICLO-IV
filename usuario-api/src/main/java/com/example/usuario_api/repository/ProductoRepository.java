@@ -14,5 +14,9 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
         BigDecimal maxPrecio,
         Pageable pageable
     );
+    Page<Producto> findByPrecioBetween(BigDecimal min, BigDecimal max, Pageable pageable);
+
+
+
 }
 
