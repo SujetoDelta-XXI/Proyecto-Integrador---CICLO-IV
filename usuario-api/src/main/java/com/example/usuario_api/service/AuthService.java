@@ -15,10 +15,12 @@ import com.example.usuario_api.repository.PasswordResetTokenRepository;
 import com.example.usuario_api.repository.UsuarioRepository;
 import com.example.usuario_api.security.GoogleVerifier;
 import com.example.usuario_api.security.JwtUtils;
-
+import java.util.List;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -72,32 +74,47 @@ public class AuthService {
         return true;
     }
 
-    /** 2) Login tradicional → inicia 2-FA si aplica */
-    public Login2FaResponse login(String correo, String rawPassword) {
-        Usuario u = usuarioRepo.findByCorreo(correo)
-            .filter(us -> passwordEncoder.matches(rawPassword, us.getContraseña()))
-            .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
+  /** 2) Login tradicional → inicia 2-FA si aplica */
+public Login2FaResponse login(String correo, String rawPassword) {
+    Usuario u = usuarioRepo.findByCorreo(correo)
+        .filter(us -> passwordEncoder.matches(rawPassword, us.getContraseña()))
+        .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
 
-        if (u.getTiene_2fa() == 0) {
-            return new Login2FaResponse(
-                true,
-                Map.of("correo", u.getCorreo_auth() != null),
-                correo
-            );
-        }
+    // Generar token JWT para el usuario (aunque aún no verifique el código 2FA)
+    String jwt = jwtUtils.generateJwtToken(u); // ✅ correcto
 
-        otpService.generateAndSendCode(correo, u.getCorreo_auth());
-        return new Login2FaResponse(true, Map.of("correo", true), correo);
+
+    // Map de métodos disponibles
+    Map<String, Boolean> metodos = Map.of("correo", u.getCorreo_auth() != null);
+
+    // Si aún no tiene activado 2FA
+    if (u.getTiene_2fa() == 0) {
+        return new Login2FaResponse(true, metodos, correo, jwt);
     }
+
+    // Si ya tiene activado el 2FA
+    otpService.generateAndSendCode(correo, u.getCorreo_auth());
+    return new Login2FaResponse(true, Map.of("correo", true), correo, jwt);
+}
+
 
     /** 3) Verificar código 2-FA y devolver JWT */
     public String verify2Fa(String correo, String code) {
-        if (!otpService.verify(correo, code)) {
-            throw new IllegalArgumentException("Código 2FA inválido");
-        }
-        Usuario u = usuarioRepo.findByCorreo(correo).orElseThrow();
-        return jwtUtils.generateJwtToken(u);
+    if (!otpService.verify(correo, code)) {
+        throw new IllegalArgumentException("Código 2FA inválido");
     }
+    Usuario u = usuarioRepo.findByCorreo(correo).orElseThrow();
+
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        String.valueOf(u.getId()),
+        null,
+        List.of()  // Puedes usar roles aquí si estás usando Spring Security con roles
+    );
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    return jwtUtils.generateJwtToken(u);
+}
+
 
     /** 4) Registrar correo alternativo para 2-FA */
     public void register2FaEmail(String correo, String alternativo) {
@@ -160,6 +177,13 @@ public class AuthService {
                 nuevo.setTiene_2fa((short)0);
                 return usuarioRepo.save(nuevo);
             });
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+    String.valueOf(u.getId()),
+    null,
+    List.of()
+);
+SecurityContextHolder.getContext().setAuthentication(auth);
+
 
         return jwtUtils.generateJwtToken(u);
     }

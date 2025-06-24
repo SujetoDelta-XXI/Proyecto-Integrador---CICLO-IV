@@ -1,4 +1,3 @@
-// src/main/java/com/example/usuario_api/controller/CarritoController.java
 package com.example.usuario_api.controller;
 
 import java.security.Principal;
@@ -40,6 +39,22 @@ public class CarritoController {
             @RequestBody CarritoItemDto input) {
         Long userId = Long.valueOf(principal.getName());
         service.agregarItem(userId, input.getProductoId(), input.getCantidad());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<?> eliminarItem(@PathVariable Long id, Principal principal) {
+        Long userId = Long.valueOf(principal.getName());
+        service.eliminarItem(userId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/actualizar")
+    public ResponseEntity<?> actualizarCantidad(
+            Principal principal,
+            @RequestBody CarritoItemDto input) {
+        Long userId = Long.valueOf(principal.getName());
+        service.actualizarCantidad(userId, input.getProductoId(), input.getCantidad());
         return ResponseEntity.ok().build();
     }
 }

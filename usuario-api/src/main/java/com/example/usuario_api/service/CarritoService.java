@@ -1,4 +1,3 @@
-// src/main/java/com/example/usuario_api/service/CarritoService.java
 package com.example.usuario_api.service;
 
 import java.util.List;
@@ -13,13 +12,11 @@ import com.example.usuario_api.repository.DetalleCarritoRepository;
 
 @Service
 public class CarritoService {
+
     private final CarritoRepository carritoRepo;
     private final DetalleCarritoRepository detalleRepo;
 
-    public CarritoService(
-        CarritoRepository carritoRepo,
-        DetalleCarritoRepository detalleRepo
-    ) {
+    public CarritoService(CarritoRepository carritoRepo, DetalleCarritoRepository detalleRepo) {
         this.carritoRepo = carritoRepo;
         this.detalleRepo = detalleRepo;
     }
@@ -30,7 +27,6 @@ public class CarritoService {
 
     @Transactional
     public void agregarItem(Long usuarioId, Long productoId, int cantidad) {
-        // 1. Actualizar staging
         carritoRepo.deleteAll(carritoRepo.findByUsuarioId(usuarioId));
         Carrito staging = new Carrito();
         staging.setUsuario(new com.example.usuario_api.model.Usuario());
@@ -40,7 +36,6 @@ public class CarritoService {
         staging.setProductoPersonalizado(null);
         carritoRepo.save(staging);
 
-        // 2. Actualizar detalle
         List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
         items.stream()
             .filter(i -> i.getProducto() != null && i.getProducto().getId().equals(productoId))
@@ -56,4 +51,26 @@ public class CarritoService {
                 detalleRepo.save(nuevo);
             });
     }
+
+    @Transactional
+    public void eliminarItem(Long usuarioId, Long itemId) {
+        List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
+        items.stream()
+            .filter(item -> item.getId().equals(itemId))
+            .findFirst()
+            .ifPresent(detalleRepo::delete);
+    }
+
+    @Transactional
+    public void actualizarCantidad(Long usuarioId, Long productoId, int nuevaCantidad) {
+        List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
+        items.stream()
+            .filter(i -> i.getProducto() != null && i.getProducto().getId().equals(productoId))
+            .findFirst()
+            .ifPresent(item -> {
+                item.setCantidad(nuevaCantidad);
+                detalleRepo.save(item);
+            });
+    }
 }
+

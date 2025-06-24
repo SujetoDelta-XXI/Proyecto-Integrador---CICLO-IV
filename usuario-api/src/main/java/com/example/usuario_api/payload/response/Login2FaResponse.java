@@ -5,6 +5,8 @@ import java.util.Map;
 
 public record Login2FaResponse(
     boolean requiere2FA,
-    Map<String,Boolean> metodos, // e.g. Map.of("correo", true)
-    String correo
+    Map<String, Boolean> metodos,
+    String correo,
+    String jwt // 👈 agrega esto
 ) {}
+

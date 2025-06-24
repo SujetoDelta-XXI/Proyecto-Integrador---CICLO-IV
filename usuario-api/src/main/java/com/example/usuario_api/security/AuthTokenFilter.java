@@ -26,11 +26,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        // No filtrar las rutas de autenticación para que register/login no requieran token
-        return request.getRequestURI().startsWith("/api/auth/");
-    }
+   @Override
+protected boolean shouldNotFilter(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    return uri.equals("/api/auth/login")
+        || uri.equals("/api/auth/register");
+}
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

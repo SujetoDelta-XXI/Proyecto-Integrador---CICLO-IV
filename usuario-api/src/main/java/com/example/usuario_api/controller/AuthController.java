@@ -7,9 +7,10 @@ import com.example.usuario_api.payload.SignupRequest;
 import com.example.usuario_api.payload.response.JwtResponse;
 import com.example.usuario_api.payload.response.Login2FaResponse;
 import com.example.usuario_api.service.AuthService;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,9 +28,9 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody SignupRequest dto) {
         return auth.register(dto)
-            ? ResponseEntity.ok("Usuario creado exitosamente")
+            ? ResponseEntity.ok(Map.of("message", "Usuario creado exitosamente"))
             : ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Ya existe un usuario con ese correo");
+                .body(Map.of("error", "Ya existe un usuario con ese correo"));
     }
 
     /** Login tradicional */
@@ -47,30 +48,39 @@ public class AuthController {
         }
     }
 
-    /** Verificar 2FA y emitir JWT */
+    /** Verificar código 2FA y emitir nuevo JWT */
     @PostMapping("/login/verify-2fa")
-    public ResponseEntity<?> verify2fa(
-        @RequestParam String correo,
-        @RequestParam String code
-    ) {
+    public ResponseEntity<?> verify2fa(@RequestParam String code) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        String correo = authentication.getName(); // obtiene el correo del token actual
+
         try {
             String jwt = auth.verify2Fa(correo, code);
             return ResponseEntity.ok(new JwtResponse(jwt));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                 .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
-    /** Registrar correo alternativo 2FA */
+    /** Registrar correo alternativo para 2FA */
     @PostMapping("/2fa/register-email")
-    public ResponseEntity<?> register2faEmail(
-        @RequestParam String correo,
-        @RequestParam String alternativo
-    ) {
+    public ResponseEntity<?> register2faEmail(@RequestParam String alternativo) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        String correo = authentication.getName();
+
         try {
             auth.register2FaEmail(correo, alternativo);
-            return ResponseEntity.ok("Correo alternativo 2FA registrado");
+            return ResponseEntity.ok("Correo alternativo registrado");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -85,11 +95,10 @@ public class AuthController {
 
     /** Restablecer contraseña */
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
-        @RequestParam String token,
-        @RequestParam String nueva
-    ) {
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         try {
+            String token = body.get("token");
+            String nueva = body.get("nuevaContraseña");
             auth.resetPassword(token, nueva);
             return ResponseEntity.ok("Contraseña restablecida");
         } catch (IllegalArgumentException e) {
