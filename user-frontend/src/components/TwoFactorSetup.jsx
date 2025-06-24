@@ -12,7 +12,6 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
     </div>
   );
 
-  // Determina el método por defecto según lo que esté disponible
   const metodoDefault = metodos.sms
     ? "sms"
     : metodos.correo
@@ -25,7 +24,6 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  // Si cambian los métodos disponibles, actualiza el método por defecto
   useEffect(() => {
     if (metodos.sms) setMetodo("sms");
     else if (metodos.correo) setMetodo("correo");
@@ -35,18 +33,26 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
   const handleEnviarCodigo = async () => {
     setCargando(true);
     setMensaje("");
+
     try {
-      const response = await fetch("http://localhost:8080/api/usuarios/enviar-codigo-2fa", {
+      const params = new URLSearchParams();
+      params.append("alternativo", metodo === "correo" ? correo : "");
+
+      const response = await fetch("http://localhost:8080/api/auth/2fa/register-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, metodo }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: params
       });
+
       if (response.ok) {
         setEnviado(true);
         setMensaje(
           "Código enviado. Revisa tu " +
-            (metodo === "sms" ? "teléfono" : "correo alternativo") +
-            "."
+          (metodo === "sms" ? "teléfono" : "correo alternativo") +
+          "."
         );
       } else {
         setMensaje("Error al enviar el código.");
@@ -54,6 +60,7 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
     } catch {
       setMensaje("Error de conexión.");
     }
+
     setCargando(false);
   };
 
@@ -61,13 +68,23 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
     e.preventDefault();
     setCargando(true);
     setMensaje("");
+
     try {
-      const response = await fetch("http://localhost:8080/api/usuarios/verificar-codigo-2fa", {
+      const params = new URLSearchParams();
+      params.append("code", codigo.trim());
+
+      const response = await fetch("http://localhost:8080/api/auth/login/verify-2fa", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, code: codigo }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: params
       });
+
       if (response.ok) {
+        const { token } = await response.json();
+        localStorage.setItem("token", token);
         onSuccess();
       } else {
         setMensaje("Código incorrecto o expirado.");
@@ -75,10 +92,10 @@ function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
     } catch {
       setMensaje("Error de conexión.");
     }
+
     setCargando(false);
   };
 
-  // Si no hay métodos disponibles, muestra un mensaje de error
   if (!metodos.sms && !metodos.correo) {
     return (
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">

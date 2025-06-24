@@ -1,77 +1,88 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-function SidebarFilters({
-  search,
-  setSearch,
-  price,
-  setPrice,
-  selectedCategory,
-  setSelectedCategory,
-}) {
-  const [categories, setCategories] = useState([]);
+function SidebarFilters({ search, setSearch, price, setPrice, selectedCategory, setSelectedCategory }) {
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8086/api/categorias")
-      .then((res) => res.json())
-      .then((data) => {
-        const nombres = data.map((c) => c.nombre);
-        setCategories(nombres);
-      })
-      .catch((err) => console.error("Error al cargar categorías", err));
+    const fetchCategorias = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8080/api/usuario/categorias", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Error al obtener categorías");
+        const data = await res.json();
+        setCategorias(data);
+      } catch (err) {
+        console.error("Error al cargar categorías", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategorias();
   }, []);
 
   return (
-    <div className="bg-white rounded shadow p-4 sticky top-30">
-      {/* Buscador */}
-      <div className="mb-4">
+    <div className="bg-white p-4 shadow-md rounded-2xl border space-y-6 sticky top-4">
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Buscar por nombre</label>
         <input
           type="text"
-          placeholder="Buscar producto..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          placeholder="Ej: Pikachu"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-black/20"
         />
       </div>
 
-      {/* Rango de precio */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Rango de Precio</h3>
-        <input
-          type="range"
-          min="0"
-          max="200"
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          className="w-full mb-2"
-        />
-        <div className="flex justify-between text-sm">
-          <span>S/0</span>
-          <span>S/{price}</span>
-          <span>S/200</span>
-        </div>
-      </div>
-
-      {/* Categorías */}
       <div>
-        <h3 className="font-semibold mb-2">Categorías</h3>
-        <ul>
-          {categories.map((cat, idx) => (
-            <li
-              key={idx}
-              className={`mb-1 cursor-pointer text-sm px-2 py-1 rounded ${
-                selectedCategory === cat ? "bg-indigo-200" : "hover:bg-gray-100"
-              }`}
-              onClick={() =>
-                setSelectedCategory(selectedCategory === cat ? "" : cat)
-              }
-            >
-              {cat}
-            </li>
-          ))}
-        </ul>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full px-3 py-2 border rounded-md bg-white focus:outline-none focus:ring focus:ring-black/20"
+        >
+          <option value="">Todas</option>
+          {!loading && categorias.length > 0 ? (
+            categorias.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.nombre}
+              </option>
+            ))
+          ) : (
+            <option disabled>Cargando...</option>
+          )}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Precio (S/)</label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            placeholder="Min"
+            value={price.min}
+            onChange={(e) => setPrice({ ...price, min: e.target.value })}
+            className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-black/20"
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={price.max}
+            onChange={(e) => setPrice({ ...price, max: e.target.value })}
+            className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-black/20"
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-export default SidebarFilters;
+// al final de SidebarFilters.jsx
+export default React.memo(SidebarFilters);
+
+

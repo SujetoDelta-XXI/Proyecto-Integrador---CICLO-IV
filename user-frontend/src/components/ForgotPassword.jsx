@@ -19,7 +19,7 @@ function ForgotPassword() {
       return;
     }
     try {
-      const response = await fetch("http://localhost:8080/api/usuarios/recuperar", {
+      const response = await fetch("http://localhost:8080/api/usuarios/recuperar-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo }),
