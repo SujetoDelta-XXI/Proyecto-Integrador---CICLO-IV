@@ -1,4 +1,3 @@
-// src/components/LoginForm.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -6,8 +5,6 @@ import { GoogleLogin } from "@react-oauth/google";
 function LoginForm() {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
-  const [codigo2FA, setCodigo2FA] = useState("");
-  const [show2FA, setShow2FA] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -19,90 +16,52 @@ function LoginForm() {
     }
   };
 
- const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  try {
-    const resp = await fetch("http://localhost:8080/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo, contraseña }),
-    });
+    try {
+      const resp = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, contraseña }),
+      });
 
-    if (!resp.ok) {
-      const mensaje = await resp.text();
-      alert("Credenciales incorrectas: " + mensaje);
-      return;
-    }
-
-    const data = await resp.json();
-    console.log("Respuesta login:", data);
-
-    // Guardar token temporal (para setup o verificación)
-    if (data.jwt) {
-      localStorage.setItem("token", data.jwt);
-    }
-
-    if (data.requires2Fa) {
-      if (!data.metodos.correo) {
-        // 🔒 Usuario NO tiene correo alternativo → redirigir a configurar
-        navigate("/setup-2fa-method");
-      } else {
-        // ✅ Tiene correo alternativo → mostrar verificación 2FA
-        setShow2FA(true);
+      if (!resp.ok) {
+        const mensaje = await resp.text();
+        alert("Credenciales incorrectas: " + mensaje);
+        return;
       }
-    } else {
-      // 🔓 No requiere 2FA → login exitoso completo
+
+      const data = await resp.json();
+      console.log("Respuesta login:", data);
+
+      if (data.requiere2FA) {
+        sessionStorage.setItem("tokenTemporal", data.jwt);
+        // SIEMPRE ir a two-factor-setup, no preguntes por correo aquí
+        navigate("/two-factor-setup");
+        return;
+      }
+
       guardarToken(data.jwt);
       alert("Login exitoso");
       navigate("/");
+    } catch (err) {
+      console.error(err);
+      alert("Error de conexión");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error de conexión");
-  }
-};
-
-
-  const handleVerify2FA = async () => {
-  try {
-    const params = new URLSearchParams();
-    params.append("code", codigo2FA.trim());
-
-    const resp = await fetch("http://localhost:8080/api/auth/login/verify-2fa", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params,
-    });
-
-    if (!resp.ok) {
-      const mensaje = await resp.text();
-      alert("Código inválido: " + mensaje);
-      return;
-    }
-
-    const data = await resp.json();
-    guardarToken(data.jwt); // ahora sí el token final
-    alert("Login exitoso con 2FA");
-    navigate("/"); // ✅ ahora sí redirige correctamente
-  } catch (err) {
-    console.error(err);
-    alert("Error al verificar 2FA");
-  }
-};
-
+  };
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setError("");
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login-google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: credentialResponse.credential }),
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/auth/login-google",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: credentialResponse.credential }),
+        }
+      );
 
       const data = await response.json();
 
@@ -118,31 +77,6 @@ function LoginForm() {
     }
   };
 
-  // Pantalla de verificación 2FA
-  if (show2FA) {
-    return (
-      <div className="max-w-md mx-auto mt-10 text-left">
-        <h2 className="text-xl font-semibold mb-4">Verificación 2FA</h2>
-        <label className="block text-base mb-2 font-normal">
-          Código 2FA enviado a tu correo
-        </label>
-        <input
-          type="text"
-          className="w-full p-2 mb-4 bg-gray-100"
-          value={codigo2FA}
-          onChange={(e) => setCodigo2FA(e.target.value)}
-        />
-        <button
-          className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-          onClick={handleVerify2FA}
-        >
-          Verificar
-        </button>
-      </div>
-    );
-  }
-
-  // Formulario principal de login
   return (
     <div className="max-w-md mx-auto mt-10 text-left">
       <div className="text-2xl font-normal mb-6 mt-4">EstiloYa</div>

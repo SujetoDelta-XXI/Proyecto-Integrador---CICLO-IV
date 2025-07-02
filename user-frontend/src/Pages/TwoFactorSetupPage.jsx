@@ -1,18 +1,18 @@
+// src/pages/TwoFactorSetupPage.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TwoFactorSetup from "../components/TwoFactorSetup";
 
 function TwoFactorSetupPage() {
-  const [correo, setCorreo] = useState("");
   const [metodos, setMetodos] = useState({ sms: false, correo: false });
   const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token actual:", token); // 👀 Log de ayuda
-
+    const token = sessionStorage.getItem("tokenTemporal");
     if (!token) {
       alert("No estás autenticado.");
-      window.location.assign("/login");
+      navigate("/login");
       return;
     }
 
@@ -25,45 +25,42 @@ function TwoFactorSetupPage() {
         });
 
         if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`Error ${res.status}: ${errText}`);
+          throw new Error(`Error ${res.status}`);
         }
 
         const data = await res.json();
-        console.log("Respuesta /api/me:", data); // 👀 Log de ayuda
+        console.log("Usuario autenticado:", data);
 
-        if (!data.correo) {
-          throw new Error("La respuesta no contiene correo.");
-        }
-
-        setCorreo(data.correo);
         setMetodos({
           sms: !!data.telefono,
           correo: !!data.correoAlternativo,
         });
-      } catch (err) {
-        console.error("Error al obtener datos del usuario:", err);
-        alert("Error al cargar los métodos de autenticación.");
+      } catch {
+        alert("Error al cargar métodos 2FA.");
+        navigate("/login");
       } finally {
         setCargando(false);
       }
     };
 
     fetchUserInfo();
-  }, []);
+  }, [navigate]);
 
   if (cargando) {
-    return <div className="text-center mt-10">Cargando...</div>;
+    return <div className="text-center mt-10">Cargando datos...</div>;
   }
+
+  const registrarCorreoForzado = !metodos.correo; // forzar registro si no tiene correo alternativo
 
   return (
     <TwoFactorSetup
-      correo={correo}
       metodos={metodos}
-      onSuccess={() => window.location.assign("/")}
-      onCancel={() => window.location.assign("/")}
+      registrarCorreoForzado={registrarCorreoForzado}
+      onSuccess={() => navigate("/")} // éxito total = vuelve al home
+      onCancel={() => navigate("/")}
     />
   );
 }
 
 export default TwoFactorSetupPage;
+

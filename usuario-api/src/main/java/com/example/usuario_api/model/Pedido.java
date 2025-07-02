@@ -20,6 +20,8 @@ public class Pedido {
 
     @ManyToOne @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+    @Column(name = "stripe_payment_id")
+private String stripePaymentId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -41,5 +43,8 @@ public class Pedido {
 
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+    public String getStripePaymentId() { return stripePaymentId; }
+public void setStripePaymentId(String stripePaymentId) { this.stripePaymentId = stripePaymentId; }
 }
 

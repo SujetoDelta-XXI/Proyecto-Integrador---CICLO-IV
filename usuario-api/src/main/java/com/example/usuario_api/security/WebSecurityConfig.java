@@ -49,6 +49,8 @@ public class WebSecurityConfig {
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/me").authenticated() // ✅ permitido si tiene token
               .requestMatchers("/api/usuario/diseno/**").permitAll() // ✅ temporalmente público para pruebas
+              .requestMatchers("/api/stripe/**").authenticated()
+
               .anyRequest().authenticated()
           );
 
@@ -68,8 +70,9 @@ public class WebSecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("*","Authorization"));
         config.setAllowCredentials(true);
+        
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

@@ -11,5 +11,6 @@ public interface EmailService {
      * @param text     cuerpo del mensaje
      */
     void sendSimpleMessage(String to, String subject, String text);
+
 }
 

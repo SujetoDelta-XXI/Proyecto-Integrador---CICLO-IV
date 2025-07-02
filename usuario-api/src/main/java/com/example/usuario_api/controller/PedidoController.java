@@ -33,10 +33,11 @@ public class PedidoController {
                       .collect(Collectors.toList());
     }
 
-    @PostMapping
-    public PedidoDto crear(Principal principal) {
-        Long userId = Long.valueOf(principal.getName());
-        return mapper.toDto(service.crearPedidoDesdeCarrito(userId));
-    }
+    // @PostMapping
+// public PedidoDto crear(Principal principal) {
+//     Long userId = Long.valueOf(principal.getName());
+//     return mapper.toDto(service.crearPedidoDesdeCarrito(userId));
+// }
+
 }
 

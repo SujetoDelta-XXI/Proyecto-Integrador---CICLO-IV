@@ -74,83 +74,84 @@ public class AuthService {
         return true;
     }
 
-  /** 2) Login tradicional → inicia 2-FA si aplica */
 public Login2FaResponse login(String correo, String rawPassword) {
+    // 1. Verificar credenciales
     Usuario u = usuarioRepo.findByCorreo(correo)
         .filter(us -> passwordEncoder.matches(rawPassword, us.getContraseña()))
         .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
 
-    // Generar token temporal
-    String jwt = jwtUtils.generateJwtToken(u);
+    // 2. Generar token temporal con marca de temp2fa
+    String jwt = jwtUtils.generateJwtTokenTemporal(u);
 
-    // Establecer token temporal en el contexto de seguridad
+    // 3. Establecer token temporal en el contexto de Spring Security
     Authentication authSpring = new UsernamePasswordAuthenticationToken(
-        String.valueOf(u.getId()), null, List.of()
+        u.getCorreo(), null, List.of()
     );
     SecurityContextHolder.getContext().setAuthentication(authSpring);
 
-    // Detectar métodos
-    boolean tieneCorreo = u.getCorreo_auth() != null;
-    boolean tieneTelefono = u.getTelefono() != null;
+    // 4. Detectar métodos disponibles
+    boolean tieneCorreo = u.getCorreo_auth() != null && !u.getCorreo_auth().isBlank();
+    boolean tieneTelefono = u.getTelefono() != null && !u.getTelefono().isBlank();
 
     Map<String, Boolean> metodos = Map.of(
         "correo", tieneCorreo,
         "sms", tieneTelefono
     );
 
+    // 5. Lógica de flujo 2FA
     if (u.getTiene_2fa() == 0) {
-        // 🔴 Si no tiene 2FA y NO tiene correo alternativo → enviar a configuración
-        if (!tieneCorreo) {
-            return new Login2FaResponse(true, metodos, correo, jwt);
-        }
-
-        // 🔵 Si no tiene 2FA pero sí tiene correo alternativo → enviar a verificar
-        otpService.generateAndSendCode(correo, u.getCorreo_auth());
+        // primer ingreso sin 2FA, no envía código todavía
+        return new Login2FaResponse(true, metodos, correo, jwt);
+    } else {
+        // ya tiene 2FA → NO envía el código automáticamente
+        // el usuario lo pedirá explícitamente desde el frontend
         return new Login2FaResponse(true, metodos, correo, jwt);
     }
-
-    // ✅ Si ya tiene 2FA → enviar a verificar directamente
-    otpService.generateAndSendCode(correo, u.getCorreo_auth());
-    return new Login2FaResponse(true, metodos, correo, jwt);
 }
 
 
+/** 3) Verificar código 2-FA y devolver JWT */
+public String verify2Fa(String userIdFromToken, String code) {
+    Long userId = Long.parseLong(userIdFromToken);
 
+    Usuario u = usuarioRepo.findById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-    /** 3) Verificar código 2-FA y devolver JWT */
-    public String verify2Fa(String correo, String code) {
-    if (!otpService.verify(correo, code)) {
+    // validación usando correo alternativo
+    if (!otpService.verify(u.getCorreo_auth(), code)) {
         throw new IllegalArgumentException("Código 2FA inválido");
     }
 
-    Usuario u = usuarioRepo.findByCorreo(correo).orElseThrow();
-
-    // ✅ Activar 2FA si aún no está activado
+    // activar 2FA si aún no está activado
     if (u.getTiene_2fa() == 0) {
         u.setTiene_2fa((short) 1);
         usuarioRepo.save(u);
     }
 
+    // establecer autenticación con correo (post-verificación final)
     Authentication auth = new UsernamePasswordAuthenticationToken(
-        String.valueOf(u.getId()),
-        null,
-        List.of()
+        u.getCorreo(), null, List.of()
     );
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    return jwtUtils.generateJwtToken(u); // ✅ Token post-verificación
+    return jwtUtils.generateJwtToken(u); // token final
 }
 
 
 
+
+
     /** 4) Registrar correo alternativo para 2-FA */
-    public void register2FaEmail(String correo, String alternativo) {
-        Usuario u = usuarioRepo.findByCorreo(correo)
-            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
-        u.setCorreo_auth(alternativo);
-        u.setTiene_2fa((short)1);
-        usuarioRepo.save(u);
-    }
+   public void register2FaEmail(String correoDesdeToken, String alternativo) {
+    Usuario u = usuarioRepo.findByCorreo(correoDesdeToken)
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+
+    u.setCorreo_auth(alternativo);
+    u.setTiene_2fa((short) 1);
+    usuarioRepo.save(u);
+}
+
+
 
     /** 5a) Olvidé mi contraseña: generar token y enviar email */
     public void forgotPassword(String correo) {

@@ -21,23 +21,33 @@ public class MeController {
         this.repo = repo;
     }
 
-    // GET /api/me
-    @GetMapping("/me")
-    public ResponseEntity<UsuarioDto> me(Authentication auth) {
-        String correo = auth.getName(); // viene del JWT
-        return repo.findByCorreo(correo)
+@GetMapping("/me")
+public ResponseEntity<UsuarioDto> me(Authentication auth) {
+    String principal = auth.getName();
+    try {
+        // si es numérico => es ID
+        Long id = Long.parseLong(principal);
+        return repo.findById(id)
+                   .map(this::toDto)
+                   .map(ResponseEntity::ok)
+                   .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    } catch (NumberFormatException e) {
+        // si no es numérico => es correo
+        return repo.findByCorreo(principal)
                    .map(this::toDto)
                    .map(ResponseEntity::ok)
                    .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+}
 
-    @PutMapping("/me")
+
+@PutMapping("/me")
 public ResponseEntity<UsuarioDto> updateMe(
       Authentication auth,
       @RequestBody UsuarioDto dto
 ) {
-    String correo = auth.getName();
-    return repo.findByCorreo(correo).map(u -> {
+    Long id = Long.parseLong(auth.getName());
+    return repo.findById(id).map(u -> {
         if (dto.getNombre()    != null) u.setNombre(dto.getNombre());
         if (dto.getApellidos() != null) u.setApellidos(dto.getApellidos());
         if (dto.getTelefono()  != null) u.setTelefono(dto.getTelefono());
@@ -47,14 +57,16 @@ public ResponseEntity<UsuarioDto> updateMe(
 }
 
 
-    private UsuarioDto toDto(Usuario u) {
-        UsuarioDto d = new UsuarioDto();
-        d.setId(u.getId());
-        d.setNombre(u.getNombre());
-        d.setApellidos(u.getApellidos());
-        d.setCorreo(u.getCorreo());
-        d.setTelefono(u.getTelefono());
-        d.setRol(u.getRol());
-        return d;
-    }
+private UsuarioDto toDto(Usuario u) {
+    UsuarioDto d = new UsuarioDto();
+    d.setId(u.getId());
+    d.setNombre(u.getNombre());
+    d.setApellidos(u.getApellidos());
+    d.setCorreo(u.getCorreo());
+    d.setTelefono(u.getTelefono());
+    d.setRol(u.getRol());
+    d.setCorreoAlternativo(u.getCorreo_auth()); // <---
+    return d;
+}
+
 }

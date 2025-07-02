@@ -1,38 +1,35 @@
-// src/main/java/com/example/usuario_api/mapper/CarritoMapper.java
 package com.example.usuario_api.mapper;
 
-import com.example.usuario_api.dto.CarritoItemDto;
-
-import com.example.usuario_api.model.DetalleCarrito;
 import org.springframework.stereotype.Component;
+
+import com.example.usuario_api.dto.CarritoItemDto;
+import com.example.usuario_api.model.DetalleCarrito;
+import com.example.usuario_api.model.Producto;
 
 @Component
 public class CarritoMapper {
 
-    public CarritoItemDto toDto(DetalleCarrito detalle) {
+    public CarritoItemDto toDto(DetalleCarrito item) {
         CarritoItemDto dto = new CarritoItemDto();
-        dto.setId(detalle.getId());
-        dto.setCantidad(detalle.getCantidad());
+        dto.setId(item.getId());
+        dto.setCantidad(item.getCantidad());
 
-        if (detalle.getProducto() != null) {
-            dto.setProductoId(detalle.getProducto().getId());
-            dto.setNombre(detalle.getProducto().getNombre());
-            dto.setImagen(detalle.getProducto().getImagen());
-            dto.setPrecio(detalle.getProducto().getPrecio().doubleValue());
-
-            if (detalle.getProducto().getDescuento() != null) {
-                dto.setDescuento(detalle.getProducto().getDescuento().getPorcentaje());
-            } else {
-                dto.setDescuento(0); // sin descuento
-            }
+        Producto producto = item.getProducto();
+        if (producto != null) {
+            dto.setProductoId(producto.getId());
+            dto.setNombre(producto.getNombre());
+            dto.setImagen(producto.getImagen());
+            dto.setPrecio(producto.getPrecio().doubleValue());
+            dto.setDescuento(producto.getDescuento() != null
+                ? producto.getDescuento().getPorcentaje()
+                : 0);
         }
 
-        if (detalle.getProductoPersonalizado() != null) {
-            dto.setProductoPersonalizadoId(detalle.getProductoPersonalizado().getId());
-            // También puedes mapear info del personalizado si lo deseas
+        if (item.getProductoPersonalizado() != null) {
+            dto.setProductoPersonalizadoId(item.getProductoPersonalizado().getId());
+            // Si lo deseas, podrías también mapear nombre, imagen, precio desde productoPersonalizado
         }
 
         return dto;
     }
 }
-

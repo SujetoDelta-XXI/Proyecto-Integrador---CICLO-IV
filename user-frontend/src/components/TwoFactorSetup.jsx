@@ -1,201 +1,193 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-function TwoFactorSetup({ correo, metodos, onSuccess, onCancel }) {
-  // Loader con Tailwind
-  const Loader = () => (
-    <div className="flex justify-center items-center my-4">
-      <svg className="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      <span className="ml-2 text-indigo-600">Enviando código...</span>
-    </div>
-  );
-
-  const metodoDefault = metodos.sms
-    ? "sms"
-    : metodos.correo
-    ? "correo"
-    : "";
-
-  const [metodo, setMetodo] = useState(metodoDefault);
+function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }) {
+  const [metodo, setMetodo] = useState("");
+  const [correoAlt, setCorreoAlt] = useState("");
   const [codigo, setCodigo] = useState("");
   const [enviado, setEnviado] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
 
+  // PASO 1: elegir método por defecto
   useEffect(() => {
     if (metodos.sms) setMetodo("sms");
-    else if (metodos.correo) setMetodo("correo");
-    else setMetodo("");
+    if (metodos.correo && !metodos.sms) setMetodo("correo");
   }, [metodos]);
+
+  // PASO 2: si elige correo alternativo y ya está registrado, enviar automáticamente
+  useEffect(() => {
+    if (metodo === "correo" && metodos.correo && !enviado) {
+      handleEnviarCodigo(); // autoenvío
+    }
+  }, [metodo, metodos.correo, enviado]);
+
+  const handleRegistrarCorreo = async () => {
+    setCargando(true);
+    setMensaje("");
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/auth/2fa/register-email?alternativo=${correoAlt}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("tokenTemporal"),
+          },
+        }
+      );
+
+      if (res.ok) {
+       setMensaje("Correo registrado correctamente, elige método de verificación.");
+  // forzar recarga
+  window.location.href = "/two-factor-setup";
+      } else {
+        const text = await res.text();
+        setMensaje("Error al registrar: " + text);
+      }
+    } catch (err) {
+      setMensaje("Error: " + err.message);
+    }
+    setCargando(false);
+  };
 
   const handleEnviarCodigo = async () => {
     setCargando(true);
     setMensaje("");
-
     try {
-      const params = new URLSearchParams();
-      params.append("alternativo", metodo === "correo" ? correo : "");
+      const res = await fetch(
+        `http://localhost:8080/api/auth/2fa/send-code?metodo=${metodo}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("tokenTemporal"),
+          },
+        }
+      );
 
-      const response = await fetch("http://localhost:8080/api/auth/2fa/register-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: params
-      });
-
-      if (response.ok) {
+      if (res.ok) {
         setEnviado(true);
-        setMensaje(
-          "Código enviado. Revisa tu " +
-          (metodo === "sms" ? "teléfono" : "correo alternativo") +
-          "."
-        );
+        setMensaje("Código enviado correctamente.");
       } else {
-        setMensaje("Error al enviar el código.");
+        const text = await res.text();
+        setMensaje("Error al enviar: " + text);
       }
-    } catch {
-      setMensaje("Error de conexión.");
+    } catch (err) {
+      setMensaje("Error: " + err.message);
     }
-
     setCargando(false);
   };
 
-  const handleVerificarCodigo = async (e) => {
-    e.preventDefault();
+  const handleVerificar = async () => {
     setCargando(true);
     setMensaje("");
-
+    
     try {
-      const params = new URLSearchParams();
-      params.append("code", codigo.trim());
+      const res = await fetch(
+        `http://localhost:8080/api/auth/login/verify-2fa?code=${codigo}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("tokenTemporal"),
+          },
+        }
+      );
 
-      const response = await fetch("http://localhost:8080/api/auth/login/verify-2fa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: params
-      });
-
-      if (response.ok) {
-        const { token } = await response.json();
-        localStorage.setItem("token", token);
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        sessionStorage.removeItem("tokenTemporal");
         onSuccess();
       } else {
-        setMensaje("Código incorrecto o expirado.");
+        const text = await res.text();
+        setMensaje("Código inválido: " + text);
       }
-    } catch {
-      setMensaje("Error de conexión.");
+    } catch (err) {
+      setMensaje("Error: " + err.message);
     }
-
     setCargando(false);
   };
 
-  if (!metodos.sms && !metodos.correo) {
+  // PASO 1: registro correo
+  if (registrarCorreoForzado) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold mb-4">Verificación en dos pasos</h2>
-        <div className="text-red-500">
-          No tienes métodos de autenticación disponibles. Por favor, contacta al soporte.
-        </div>
+      <div className="container mt-5">
+        <h3>Configurar verificación 2FA</h3>
+        <p>Ingresa tu correo alternativo:</p>
+        <input
+          type="email"
+          className="form-control my-2"
+          value={correoAlt}
+          onChange={(e) => setCorreoAlt(e.target.value)}
+        />
         <button
-          className="mt-4 w-full py-2 rounded border border-gray-400"
-          onClick={onCancel}
+          className="btn btn-primary"
+          onClick={handleRegistrarCorreo}
+          disabled={cargando}
         >
-          Cancelar
+          Registrar correo
         </button>
+        {mensaje && <div className="alert alert-info mt-2">{mensaje}</div>}
       </div>
     );
   }
 
+  // PASO 2: elegir método
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Verificación en dos pasos</h2>
-      {!enviado ? (
-        <>
-          <p>Elige cómo recibir tu código de verificación:</p>
-          <div className="flex flex-col gap-2 my-4">
-            {metodos.sms && (
-              <label>
-                <input
-                  type="radio"
-                  name="metodo"
-                  value="sms"
-                  checked={metodo === "sms"}
-                  onChange={() => setMetodo("sms")}
-                  disabled={cargando}
-                />
-                {" "}SMS (teléfono registrado)
-              </label>
-            )}
-            {metodos.correo && (
-              <label>
-                <input
-                  type="radio"
-                  name="metodo"
-                  value="correo"
-                  checked={metodo === "correo"}
-                  onChange={() => setMetodo("correo")}
-                  disabled={cargando}
-                />
-                {" "}Correo alternativo
-              </label>
-            )}
-          </div>
-          {cargando && <Loader />}
-          <button
-            className="bg-indigo-600 text-white py-2 rounded w-full"
-            onClick={handleEnviarCodigo}
-            disabled={cargando || !metodo}
-          >
-            {cargando ? "Enviando..." : "Enviar código"}
-          </button>
-          <button
-            className="mt-2 w-full py-2 rounded border border-gray-400"
-            onClick={onCancel}
-            disabled={cargando}
-          >
-            Cancelar
-          </button>
-          {mensaje && <div className="text-red-500 mt-2">{mensaje}</div>}
-        </>
-      ) : (
-        <form onSubmit={handleVerificarCodigo} className="flex flex-col gap-4">
-          <label>
-            Ingresa el código recibido:
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              value={codigo}
-              onChange={e => setCodigo(e.target.value)}
-              disabled={cargando}
-            />
-          </label>
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white py-2 rounded"
-            disabled={cargando}
-          >
-            {cargando ? "Verificando..." : "Verificar código"}
-          </button>
-          <button
-            className="mt-2 w-full py-2 rounded border border-gray-400"
-            onClick={onCancel}
-            disabled={cargando}
-            type="button"
-          >
-            Cancelar
-          </button>
-          {mensaje && <div className="text-red-500">{mensaje}</div>}
-        </form>
+    <div className="container mt-5">
+      <h3>Verificación 2FA</h3>
+
+      <div className="mb-3">
+        <label>Método de verificación:</label>
+        <select
+          className="form-select"
+          value={metodo}
+          onChange={(e) => {
+            setMetodo(e.target.value);
+            setEnviado(false); // resetear si cambia
+          }}
+        >
+          {metodos.sms && <option value="sms">SMS</option>}
+          {metodos.correo && <option value="correo">Correo alternativo</option>}
+        </select>
+      </div>
+
+      {/* PASO 3: envío y verificación */}
+      {metodo === "sms" && !enviado && (
+        <button
+          className="btn btn-warning"
+          onClick={handleEnviarCodigo}
+          disabled={cargando}
+        >
+          Enviar código
+        </button>
       )}
+
+      {enviado && (
+        <>
+          <input
+            type="text"
+            className="form-control my-3"
+            placeholder="Código recibido"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+          />
+          <button
+            className="btn btn-success"
+            onClick={handleVerificar}
+            disabled={cargando}
+          >
+            Verificar código
+          </button>
+        </>
+      )}
+
+      {mensaje && <div className="alert alert-info mt-3">{mensaje}</div>}
+      <button className="btn btn-link mt-3" onClick={onCancel}>
+        Cancelar
+      </button>
     </div>
   );
 }
 
 export default TwoFactorSetup;
+

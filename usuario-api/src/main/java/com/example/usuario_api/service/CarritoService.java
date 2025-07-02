@@ -77,12 +77,14 @@ public ResumenCompraDto calcularResumen(Long usuarioId) {
     List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);
 
     double subtotal = items.stream()
+        .filter(i -> i.getProducto() != null) // seguridad
         .mapToDouble(i -> {
             double precio = i.getProducto().getPrecio().doubleValue();
             double descuento = (i.getProducto().getDescuento() != null)
-                ? precio * i.getProducto().getDescuento().getPorcentaje().doubleValue() / 100
-                : 0;
-            return (precio - descuento) * i.getCantidad();
+                ? i.getProducto().getDescuento().getPorcentaje().doubleValue()
+                : 0.0;
+            double precioFinal = precio * (1 - descuento / 100);
+            return precioFinal * i.getCantidad();
         })
         .sum();
 
@@ -97,6 +99,7 @@ public ResumenCompraDto calcularResumen(Long usuarioId) {
     dto.setTotal(total);
     return dto;
 }
+
 @Transactional
 public void finalizarCompra(Long usuarioId) {
     List<DetalleCarrito> items = detalleRepo.findByUsuarioId(usuarioId);

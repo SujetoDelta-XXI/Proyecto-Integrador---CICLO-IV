@@ -125,12 +125,12 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <!-- ▶ añadido ▶ WebFlux -->
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
+  <groupId>com.stripe</groupId>
+  <artifactId>stripe-java</artifactId>
+  <version>24.9.0</version>
+</dependency>
+
   </dependencies>
 
   <build>
