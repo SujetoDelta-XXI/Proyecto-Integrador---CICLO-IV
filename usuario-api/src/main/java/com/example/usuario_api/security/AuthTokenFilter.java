@@ -29,6 +29,7 @@ protected boolean shouldNotFilter(HttpServletRequest request) {
     return uri.equals("/api/auth/login")
         || uri.equals("/api/auth/register")
         || uri.equals("/api/usuario/categorias")
+        || uri.startsWith("/api/usuario/diseno/")
         || uri.startsWith("/error"); // importante para evitar bucles infinitos
 }
 

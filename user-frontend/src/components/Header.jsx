@@ -19,6 +19,12 @@ function Header() {
         <Link to="/register" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
           Registro
         </Link>
+        <Link to="/disenar" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
+          Diseñar
+        </Link>
+        <Link to="/mis-disenos" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
+          Mis Diseños
+        </Link>
         <Link to="/carrito" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
   <FaShoppingCart size={20} />
 </Link>

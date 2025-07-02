@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -39,5 +41,29 @@ public class ProductoController {
     public ProductoDto obtenerPorId(@PathVariable Long id) {
         Producto producto = service.porId(id).orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         return mapper.toDto(producto);
+    }
+
+    @GetMapping("/ofertas-dia")
+    public List<ProductoDto> obtenerOfertasDelDia() {
+        List<Producto> productos = service.obtenerOfertasDelDia();
+        return productos.stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/ofertas-semana")
+    public List<ProductoDto> obtenerOfertasDeLaSemana() {
+        List<Producto> productos = service.obtenerOfertasDeLaSemana();
+        return productos.stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/mas-vendidos")
+    public List<ProductoDto> obtenerProductosMasVendidos() {
+        List<Producto> productos = service.obtenerProductosMasVendidos();
+        return productos.stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/nuevos")
+    public List<ProductoDto> obtenerProductosNuevos() {
+        List<Producto> productos = service.obtenerProductosNuevos();
+        return productos.stream().map(mapper::toDto).collect(Collectors.toList());
     }
 }

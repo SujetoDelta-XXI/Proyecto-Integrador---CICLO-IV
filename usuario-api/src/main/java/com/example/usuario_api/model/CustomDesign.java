@@ -10,7 +10,7 @@ public class CustomDesign {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="MEDIUMTEXT")
     private String url_imagen;
     @Column(columnDefinition="TEXT")
     private String descripcion;
