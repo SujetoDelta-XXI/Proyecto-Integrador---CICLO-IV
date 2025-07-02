@@ -1,0 +1,55 @@
+.pago-layout {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+}
+.pago-metodos {
+  flex: 1;
+}
+.pago-metodos div {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 10px;
+}
+.pago-metodos .activo {
+  border-color: #007bff;
+  background: #eef6ff;
+}
+.pago-formulario {
+  flex: 2;
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo-tarjeta {
+  max-width: 100px;
+  margin-bottom: 1rem;
+}
+.formulario-tarjeta input {
+  margin-bottom: 1rem;
+  width: 100%;
+  padding: 0.5rem;
+}
+.btn-pagar {
+  background: black;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+}
+.qr-container {
+  text-align: center;
+}
+.qr-container img {
+  max-width: 250px;
+  margin-bottom: 1rem;
+}

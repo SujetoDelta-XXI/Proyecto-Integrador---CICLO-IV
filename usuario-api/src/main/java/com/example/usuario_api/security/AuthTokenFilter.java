@@ -6,10 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,55 +27,56 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.jwtUtils = jwtUtils;
     }
 
-  @Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
-    String uri = request.getRequestURI();
-    return uri.equals("/api/auth/login")
-        || uri.equals("/api/auth/register")
-        || uri.equals("/api/usuario/categorias")
-        || uri.startsWith("/error"); // importante para evitar bucles infinitos
-}
-
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.equals("/api/auth/login")
+            || uri.equals("/api/auth/register")
+            || uri.startsWith("/error");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain)
                                     throws ServletException, IOException {
-        // 1) Extraer token desde Authorization: Bearer xxx
+
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         String token = null;
+
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
         }
 
-        // 2) Si hay token y es válido
         if (token != null && jwtUtils.validateJwtToken(token)) {
-            String subject = jwtUtils.getUserNameFromJwtToken(token); // ← puede ser correo o ID
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwtUtils.getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-            // 👉 Evitar sobrescribir si ya hay auth
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            String subject = claims.getSubject();
+            Boolean isTemp2fa = claims.get("temp2fa", Boolean.class);
 
-                // ✅ NO buscamos en UserDetails → solo usamos el subject como principal temporal
-                UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                        subject,  // principal (ej: correo)
-                        null,
-                        List.of() // sin roles por ahora
-                    );
+            UsernamePasswordAuthenticationToken auth;
 
-                auth.setDetails(
-                    new WebAuthenticationDetailsSource()
-                        .buildDetails(request)
+            if (Boolean.TRUE.equals(isTemp2fa)) {
+                // token temporal, sin authorities reales
+                auth = new UsernamePasswordAuthenticationToken(
+                    subject, null, List.of(new SimpleGrantedAuthority("TEMP2FA"))
                 );
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                // token final
+                auth = new UsernamePasswordAuthenticationToken(
+                    subject, null, List.of(new SimpleGrantedAuthority("USER"))
+                );
             }
+
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
-        // 3) Continuar cadena
         chain.doFilter(request, response);
     }
 }
-
 

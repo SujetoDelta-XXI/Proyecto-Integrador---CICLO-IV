@@ -8,6 +8,8 @@ public class UsuarioDto {
     private String correo;
     private String telefono;
     private String rol;
+    private String correoAlternativo;
+
 
     // Getters y Setters
 
@@ -57,6 +59,12 @@ public class UsuarioDto {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+    public String getCorreoAlternativo() {
+        return correoAlternativo;
+    }
+    public void setCorreoAlternativo(String correoAlternativo) {
+        this.correoAlternativo = correoAlternativo;
     }
 }
 

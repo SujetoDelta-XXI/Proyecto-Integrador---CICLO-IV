@@ -1,7 +1,5 @@
 package com.example.usuario_api.model;
-
 import jakarta.persistence.*;
-
 @Entity
 @Table(name = "detalle_carrito",
        uniqueConstraints = {
@@ -12,7 +10,6 @@ public class DetalleCarrito {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 

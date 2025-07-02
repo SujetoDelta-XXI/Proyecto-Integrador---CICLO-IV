@@ -24,7 +24,6 @@ public class CarritoController {
         this.service = service;
         this.mapper  = mapper;
     }
-
     @GetMapping
     public List<CarritoItemDto> verCarrito(Principal principal) {
         Long userId = Long.valueOf(principal.getName()); 
@@ -33,7 +32,6 @@ public class CarritoController {
                       .map(mapper::toDto)
                       .collect(Collectors.toList());
     }
-
     @PostMapping("/agregar")
     public ResponseEntity<?> agregar(
             Principal principal,
@@ -42,14 +40,12 @@ public class CarritoController {
         service.agregarItem(userId, input.getProductoId(), input.getCantidad());
         return ResponseEntity.ok().build();
     }
-
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminarItem(@PathVariable Long id, Principal principal) {
         Long userId = Long.valueOf(principal.getName());
         service.eliminarItem(userId, id);
         return ResponseEntity.ok().build();
     }
-
     @PutMapping("/actualizar")
     public ResponseEntity<?> actualizarCantidad(
             Principal principal,

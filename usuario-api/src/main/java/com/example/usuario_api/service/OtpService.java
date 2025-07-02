@@ -17,7 +17,7 @@ public class OtpService {
 
     public String generateAndSendCode(String correoUsuario, String correoAlternativo) {
         String code = String.valueOf(new Random().nextInt(900_000) + 100_000);
-        codes.put(correoUsuario, code);
+        codes.put(correoAlternativo, code);
         // <— aquí usa el método que realmente definas en EmailService:
         emailService.sendSimpleMessage(
           correoAlternativo,
@@ -27,7 +27,7 @@ public class OtpService {
         return code;
     }
 
-    public boolean verify(String correoUsuario, String code) {
-        return code.equals(codes.remove(correoUsuario));
+    public boolean verify(String correoAlternativo, String code) {
+        return code.equals(codes.remove(correoAlternativo));
     }
 }
