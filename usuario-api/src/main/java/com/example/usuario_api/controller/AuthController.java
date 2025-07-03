@@ -97,9 +97,9 @@ public ResponseEntity<?> register2faEmail(@RequestParam String alternativo) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
     }
 
-    String correo = authentication.getName();  // correo
+    String idStr = authentication.getName();
     try {
-        auth.register2FaEmail(correo, alternativo);  // pasas el correo
+        auth.register2FaEmail(idStr, alternativo);  // pasas el correo
         return ResponseEntity.ok("Correo alternativo registrado");
     } catch (IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
@@ -135,10 +135,12 @@ public ResponseEntity<?> send2faCode(@RequestParam String metodo, Authentication
 
     /** Olvidé contraseña */
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String correo) {
-        auth.forgotPassword(correo);
-        return ResponseEntity.ok("Email de recuperación enviado");
-    }
+public ResponseEntity<?> forgotPassword(@RequestBody Map<String,String> body) {
+    String correo = body.get("correo");
+    auth.forgotPassword(correo);
+    return ResponseEntity.ok("Email de recuperación enviado");
+}
+
 
     /** Restablecer contraseña */
     @PostMapping("/reset-password")

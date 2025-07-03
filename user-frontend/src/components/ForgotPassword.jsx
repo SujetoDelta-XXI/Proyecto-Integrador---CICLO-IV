@@ -19,17 +19,21 @@ function ForgotPassword() {
       return;
     }
     try {
-      const response = await fetch("http://localhost:8080/api/usuarios/recuperar-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo }),
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/auth/forgot-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ correo }),
+        }
+      );
+
       if (response.ok) {
         setEnviado(true);
       } else {
         setError("Ocurrió un error. Intenta nuevamente.");
       }
-    } catch  {
+    } catch {
       setError("Error de conexión con el servidor.");
     }
     setCargando(false);
@@ -40,7 +44,8 @@ function ForgotPassword() {
       <div className="text-2xl font-normal mb-6 mt-4">EstiloYa</div>
       <h1 className="text-3xl font-bold mb-2">¿Olvidaste tu contraseña?</h1>
       <p className="text-base text-gray-800 mb-6">
-        Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+        Ingresa tu correo electrónico y te enviaremos un enlace para restablecer
+        tu contraseña.
       </p>
       {!enviado ? (
         <form className="flex flex-col" onSubmit={handleSubmit}>
@@ -51,16 +56,32 @@ function ForgotPassword() {
               className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
               id="email"
               value={correo}
-              onChange={e => setCorreo(e.target.value)}
+              onChange={(e) => setCorreo(e.target.value)}
               required
               disabled={cargando}
             />
           </label>
           {cargando && (
             <div className="flex items-center justify-center my-4">
-              <svg className="animate-spin h-6 w-6 text-gray-800 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              <svg
+                className="animate-spin h-6 w-6 text-gray-800 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                ></path>
               </svg>
               <span>Espere un momento...</span>
             </div>
@@ -88,7 +109,8 @@ function ForgotPassword() {
             ¡Listo!
           </div>
           <p className="text-base text-gray-800">
-            Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.
+            Si el correo está registrado, recibirás un enlace para restablecer
+            tu contraseña.
           </p>
           <button
             type="button"

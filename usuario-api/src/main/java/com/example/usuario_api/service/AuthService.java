@@ -85,8 +85,9 @@ public Login2FaResponse login(String correo, String rawPassword) {
 
     // 3. Establecer token temporal en el contexto de Spring Security
     Authentication authSpring = new UsernamePasswordAuthenticationToken(
-        u.getCorreo(), null, List.of()
-    );
+    String.valueOf(u.getId()), null, List.of()
+);
+
     SecurityContextHolder.getContext().setAuthentication(authSpring);
 
     // 4. Detectar métodos disponibles
@@ -130,8 +131,9 @@ public String verify2Fa(String userIdFromToken, String code) {
 
     // establecer autenticación con correo (post-verificación final)
     Authentication auth = new UsernamePasswordAuthenticationToken(
-        u.getCorreo(), null, List.of()
-    );
+    String.valueOf(u.getId()), null, List.of()
+);
+
     SecurityContextHolder.getContext().setAuthentication(auth);
 
     return jwtUtils.generateJwtToken(u); // token final
@@ -142,14 +144,22 @@ public String verify2Fa(String userIdFromToken, String code) {
 
 
     /** 4) Registrar correo alternativo para 2-FA */
-   public void register2FaEmail(String correoDesdeToken, String alternativo) {
-    Usuario u = usuarioRepo.findByCorreo(correoDesdeToken)
-        .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+   public void register2FaEmail(String correoOId, String alternativo) {
+    Usuario u;
+    try {
+        Long id = Long.parseLong(correoOId);
+        u = usuarioRepo.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+    } catch (NumberFormatException e) {
+        u = usuarioRepo.findByCorreo(correoOId)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+    }
 
     u.setCorreo_auth(alternativo);
     u.setTiene_2fa((short) 1);
     usuarioRepo.save(u);
 }
+
 
 
 
