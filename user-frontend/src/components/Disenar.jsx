@@ -10,22 +10,46 @@ function Disenar() {
   const [success, setSuccess] = useState("");
 
   const handleGenerar = async () => {
+    if (!prompt.trim()) {
+      setError("Por favor, ingresa una descripción para generar la imagen");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccess("");
     setImagen(null);
+    
     try {
+      console.log("Generando imagen con prompt:", prompt);
+      
       const res = await fetch(`${API_BASE}/generar-imagen`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: prompt.trim() }),
       });
-      if (!res.ok) throw new Error("Error al generar la imagen");
+      
+      console.log("Respuesta del servidor:", res.status, res.statusText);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Error del servidor:", errorText);
+        throw new Error(`Error ${res.status}: ${errorText || "Error al generar la imagen"}`);
+      }
+      
       const data = await res.json();
-      setImagen(data.base64Image || data.imagen || data.image || null);
-      if (!data.base64Image && !data.imagen && !data.image) setError("No se recibió imagen");
+      console.log("Datos recibidos:", data);
+      
+      const imagenGenerada = data.base64Image || data.imagen || data.image || data.url;
+      if (!imagenGenerada) {
+        throw new Error("No se recibió imagen del servidor");
+      }
+      
+      setImagen(imagenGenerada);
+      setSuccess("¡Imagen generada exitosamente!");
     } catch (err) {
-      setError("No se pudo generar la imagen");
+      console.error("Error completo:", err);
+      setError(err.message || "No se pudo generar la imagen. Intenta con otra descripción.");
     } finally {
       setLoading(false);
     }
@@ -105,46 +129,69 @@ function Disenar() {
   const isAuthenticated = !!localStorage.getItem("token");
 
   return (
-    <div className="max-w-xl mx-auto mt-12 p-6 bg-white rounded-xl shadow">
-      <h2 className="text-3xl font-bold mb-6 text-center">Diseñar con IA</h2>
+    <div className="max-w-2xl mx-auto mt-12 p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">🎨 Diseñar con IA</h2>
+      
       {!isAuthenticated && (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
           ⚠️ Necesitas <a href="/login" className="underline font-bold">iniciar sesión</a> para guardar diseños.
         </div>
       )}
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">Prompt para la IA:</label>
-        <input
-          type="text"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      
+      <div className="mb-6">
+        <label className="block text-gray-700 mb-2 font-semibold">Describe tu diseño:</label>
+        <textarea
+          className="w-full border rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
-          placeholder="Describe tu diseño..."
+          placeholder="Ej: Un logo moderno para una tienda de ropa deportiva, con colores azul y blanco, estilo minimalista..."
           disabled={loading}
+          rows={3}
         />
+        
+        <div className="mt-2 text-sm text-gray-500">
+          <p className="font-semibold mb-1">💡 Ejemplos de prompts:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• "Logo para restaurante italiano, colores verde y rojo"</li>
+            <li>• "Diseño de camiseta con estampado de flores tropicales"</li>
+            <li>• "Tarjeta de presentación elegante para arquitecto"</li>
+            <li>• "Banner web para tienda de tecnología, estilo futurista"</li>
+          </ul>
+        </div>
       </div>
       <div className="flex gap-3 mb-6">
         <button
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition disabled:opacity-50"
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 font-semibold flex items-center gap-2"
           onClick={handleGenerar}
-          disabled={!prompt || loading}
+          disabled={!prompt.trim() || loading}
         >
-          {loading ? "Generando..." : "Generar"}
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Generando...
+            </>
+          ) : (
+            <>
+              ✨ Generar
+            </>
+          )}
         </button>
         <button
-          className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition"
+          className="bg-gray-300 text-gray-800 px-4 py-3 rounded-lg hover:bg-gray-400 transition disabled:opacity-50"
           onClick={handleReiniciar}
-          disabled={loading && !imagen}
+          disabled={loading}
         >
-          Reiniciar
+          🔄 Reiniciar
         </button>
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
-          onClick={handleGuardar}
-          disabled={!imagen || loading}
-        >
-          Guardar
-        </button>
+        {isAuthenticated && (
+          <button
+            className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 font-semibold"
+            onClick={handleGuardar}
+            disabled={!imagen || loading}
+          >
+            💾 Guardar
+          </button>
+        )}
       </div>
       {error && (
         <div className="text-red-600 mb-4 text-center">
@@ -162,12 +209,17 @@ function Disenar() {
       {success && <div className="text-green-600 mb-4 text-center">{success}</div>}
       {imagen && (
         <div className="flex flex-col items-center">
-          <img
-            src={`data:image/png;base64,${imagen}`}
-            alt="Diseño generado"
-            className="rounded shadow max-h-96 mb-2"
-          />
-          <span className="text-gray-500 text-xs">Vista previa del diseño generado</span>
+          <div className="bg-gray-50 p-4 rounded-lg border-2 border-dashed border-gray-200 w-full">
+            <img
+              src={`data:image/png;base64,${imagen}`}
+              alt="Diseño generado"
+              className="rounded-lg shadow-lg max-h-96 w-full object-contain mx-auto"
+            />
+          </div>
+          <div className="mt-3 text-center">
+            <span className="text-gray-600 text-sm font-medium">✨ Diseño generado exitosamente</span>
+            <p className="text-gray-500 text-xs mt-1">Puedes guardarlo o generar uno nuevo</p>
+          </div>
         </div>
       )}
     </div>

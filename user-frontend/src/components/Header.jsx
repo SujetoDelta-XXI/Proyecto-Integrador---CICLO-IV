@@ -22,6 +22,9 @@ function Header() {
         <Link to="/productos" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
           Productos
         </Link>
+        <Link to="/disenar" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
+          Diseñar
+        </Link>
         {token ? (
           <>
             <Link
@@ -29,6 +32,12 @@ function Header() {
               className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
             >
               Perfil
+            </Link>
+            <Link
+              to="/mis-disenos"
+              className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
+            >
+              Mis Diseños
             </Link>
             <button
               onClick={handleLogout}

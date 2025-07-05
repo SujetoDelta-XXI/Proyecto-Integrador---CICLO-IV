@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+// import { GoogleLogin } from "@react-oauth/google";  // 👉 comentar import
 
 function LoginForm() {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
-  const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const guardarToken = (jwt) => {
@@ -37,7 +37,6 @@ function LoginForm() {
 
       if (data.requiere2FA) {
         sessionStorage.setItem("tokenTemporal", data.jwt);
-        // SIEMPRE ir a two-factor-setup, no preguntes por correo aquí
         navigate("/two-factor-setup");
         return;
       }
@@ -51,31 +50,29 @@ function LoginForm() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setError("");
-    try {
-      const response = await fetch(
-        "http://localhost:8080/api/auth/login-google",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: credentialResponse.credential }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.jwt) {
-        guardarToken(data.jwt);
-        alert("Login exitoso con Google");
-        navigate("/");
-      } else {
-        setError("Login con Google no autorizado");
-      }
-    } catch {
-      setError("Error al iniciar sesión con Google");
-    }
-  };
+  // const handleGoogleSuccess = async (credentialResponse) => {
+  //   setError("");
+  //   try {
+  //     const response = await fetch(
+  //       "http://localhost:8080/api/auth/login-google",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ token: credentialResponse.credential }),
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     if (response.ok && data.jwt) {
+  //       guardarToken(data.jwt);
+  //       alert("Login exitoso con Google");
+  //       navigate("/");
+  //     } else {
+  //       setError("Login con Google no autorizado");
+  //     }
+  //   } catch {
+  //     setError("Error al iniciar sesión con Google");
+  //   }
+  // };
 
   return (
     <div className="max-w-md mx-auto mt-10 text-left">
@@ -124,15 +121,19 @@ function LoginForm() {
       </form>
 
       <div className="my-4 flex flex-col items-center">
-        <span className="mb-2 text-gray-500">O ingresa con Google</span>
+        <span className="mb-2 text-gray-500"> {/* O ingresa con Google */} </span>
+        {/* 
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => setError("Error al iniciar sesión con Google")}
-          useOneTap
+          useOneTap={false}
+          auto_select={false}
+          cancel_on_tap_outside={false}
         />
+        */}
       </div>
 
-      {error && <div className="text-red-500 mt-2">{error}</div>}
+
     </div>
   );
 }

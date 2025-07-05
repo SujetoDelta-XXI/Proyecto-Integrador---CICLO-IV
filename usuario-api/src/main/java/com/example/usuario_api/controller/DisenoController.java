@@ -20,8 +20,7 @@ public class DisenoController {
     @PostMapping("/generar-imagen")
     public Mono<ResponseEntity<GenerarImagenResponseDto>> generarImagen(@RequestBody GenerarImagenRequestDto request) {
         System.out.println("🎯 Endpoint /generar-imagen llamado");
-        System.out.println("📝 Request recibido: " + request.getPrompt());
-     g   
+        System.out.println("📝 Request recibido: " + request.getPrompt());   
         return disenoService.generarImagen(request.getPrompt())
                 .map(resp -> {
                     System.out.println("✅ Respuesta generada exitosamente");
