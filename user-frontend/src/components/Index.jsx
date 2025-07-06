@@ -1,6 +1,39 @@
 import { Link } from "react-router-dom";
 import Imagenindex from "../assets/imagenindex.jpg";
+import { useState, useEffect } from "react";
+import CarruselComponent from "./CarruselComponent";
+import ProductoCarrusel from "./ProductoCarrusel";
+
+
 function Index() {
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cargarProductos = async () => {
+      try {
+        setLoading(true);
+ 
+
+
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarProductos();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* HERO SECTION */}

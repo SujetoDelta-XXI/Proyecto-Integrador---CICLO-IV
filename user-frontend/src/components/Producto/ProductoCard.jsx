@@ -16,7 +16,7 @@ function ProductoCard({ producto }) {
   const agregarAlCarrito = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/usuario/carrito/agregar", {
+      const res = await fetch("http://192.168.18.2:8080/api/usuario/carrito/agregar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

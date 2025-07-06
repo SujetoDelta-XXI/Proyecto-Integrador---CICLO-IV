@@ -48,6 +48,7 @@ public class WebSecurityConfig {
 
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/me").authenticated() // ✅ permitido si tiene token
+              .requestMatchers("/api/usuario/diseno/**").permitAll() // ✅ temporalmente público para pruebas
               .requestMatchers("/api/stripe/**").authenticated()
 
               .anyRequest().authenticated()

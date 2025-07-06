@@ -1,1 +1,39 @@
+# Entorno virtual
 venv/
+env/
+.venv/
+
+# Archivos de Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+
+# Base de datos local SQLite (si alguna vez la usas)
+*.sqlite3
+
+# Archivos de migraciones compiladas
+*.pyc
+*.pyo
+
+# Archivos de configuración locales
+*.env
+.env.local
+local_settings.py
+
+# Logs
+*.log
+
+# Archivos estáticos recopilados
+staticfiles/
+media/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operativo
+.DS_Store

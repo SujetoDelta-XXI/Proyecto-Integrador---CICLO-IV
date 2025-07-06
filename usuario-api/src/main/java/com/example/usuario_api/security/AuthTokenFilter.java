@@ -27,13 +27,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.jwtUtils = jwtUtils;
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return uri.equals("/api/auth/login")
-            || uri.equals("/api/auth/register")
-            || uri.startsWith("/error");
-    }
+  @Override
+protected boolean shouldNotFilter(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    return uri.equals("/api/auth/login")
+        || uri.equals("/api/auth/register")
+        || uri.equals("/api/usuario/categorias")
+        || uri.startsWith("/api/usuario/diseno/")
+        || uri.startsWith("/error"); // importante para evitar bucles infinitos
+}
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
