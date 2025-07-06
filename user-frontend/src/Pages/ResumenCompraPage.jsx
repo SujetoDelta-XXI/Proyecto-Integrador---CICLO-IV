@@ -1,4 +1,3 @@
-// ResumenCompraPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -27,41 +26,70 @@ function ResumenCompraPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold text-center mb-6">Resumen del pedido</h2>
-      <div className="bg-white shadow-md rounded p-6">
-        {carrito.map((item) => {
-          const precioFinal = item.precio * (1 - (item.descuento || 0) / 100);
-          return (
-            <div key={item.id} className="flex items-center justify-between border-b py-4">
-              <div className="flex items-center">
-                <img src={item.imagen} alt={item.nombre} className="w-16 h-16 mr-4" />
-                <div>
-                  <h3 className="font-semibold">{item.nombre}</h3>
-                  <p className="text-sm text-gray-600">
-                    {item.descuento > 0 && (
-                      <>
-                        <span className="line-through text-red-500 mr-1">S/{item.precio.toFixed(2)}</span>
-                        <span className="text-green-600">S/{precioFinal.toFixed(2)} ({item.descuento}% dto.)</span>
-                      </>
-                    )}
-                  </p>
-                  <p>Cantidad: {item.cantidad}</p>
-                  <p className="text-sm">Subtotal: S/{(precioFinal * item.cantidad).toFixed(2)}</p>
+      <h2 className="text-3xl font-bold text-center mb-6">🧾 Resumen del Pedido</h2>
+      <div className="bg-white shadow-lg rounded p-6">
+        {carrito.length === 0 ? (
+          <p className="text-center text-gray-500">Tu carrito está vacío.</p>
+        ) : (
+          <>
+            {carrito.map((item) => {
+              const precioFinal = item.precio * (1 - (item.descuento || 0) / 100);
+              return (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between border-b py-4 gap-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={item.imagen}
+                      alt={item.nombre}
+                      className="w-20 h-20 object-cover rounded shadow"
+                    />
+                    <div>
+                      <h3 className="font-semibold">{item.nombre}</h3>
+                      {item.descuento > 0 ? (
+                        <p className="text-sm text-green-600">
+                          <span className="line-through text-red-500 mr-1">
+                            S/{item.precio.toFixed(2)}
+                          </span>
+                          S/{precioFinal.toFixed(2)} ({item.descuento}% dto.)
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-600">
+                          S/{item.precio.toFixed(2)}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500">Cantidad: {item.cantidad}</p>
+                      <p className="text-sm font-semibold">
+                        Subtotal: S/{(precioFinal * item.cantidad).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-sm sm:text-base text-right font-semibold mt-2 sm:mt-0">
+                    Total Item:{" "}
+                    <span className="text-blue-600">
+                      S/{(precioFinal * item.cantidad).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
+              );
+            })}
+            <div className="my-6 border-t pt-4 flex justify-end">
+              <div className="text-xl font-bold text-right">
+                Total a Pagar:{" "}
+                <span className="text-green-700">
+                  S/{calcularTotal().toFixed(2)}
+                </span>
               </div>
             </div>
-          );
-        })}
-        <hr className="my-4" />
-        <div className="text-right text-xl font-semibold">
-          Total: S/ {calcularTotal().toFixed(2)}
-        </div>
-        <button
-          onClick={() => navigate("/datos-envio")}
-          className="mt-4 bg-black text-white px-6 py-2 rounded hover:bg-gray-900 w-full"
-        >
-          Ir a pagar
-        </button>
+            <button
+              onClick={() => navigate("/datos-envio")}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded shadow transition"
+            >
+              Proceder al Pago
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

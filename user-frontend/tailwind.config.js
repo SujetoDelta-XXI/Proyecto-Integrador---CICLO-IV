@@ -1,4 +1,5 @@
 // tailwind.config.js
+
 export default {
   content: [
     "./index.html",
@@ -6,6 +7,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        montserrat: ["Montserrat", "sans-serif"],
+      },
       animation: {
         fadeIn: "fadeIn 0.4s ease-in-out both",
       },

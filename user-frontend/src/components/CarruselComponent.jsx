@@ -1,6 +1,8 @@
-import { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const productos = [
   { id: 1, nombre: "Polo Negro 1", img: "https://th.bing.com/th/id/OIP.cafRi3jusreZzbeamaWJKgHaHW?cb=iwc2&rs=1&pid=ImgDetMain" },
@@ -10,63 +12,39 @@ const productos = [
   { id: 5, nombre: "Polera Star Wars", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLa8swqg3UjK-v9pTmXQfBqZzTdE93muztjw&s" },
 ];
 
-const ITEMS_POR_VISTA = 3;
-
-function CarruselMultiItem() {
-  const [indice, setIndice] = useState(0);
-
-  const productosAMostrar = productos.slice(indice, indice + ITEMS_POR_VISTA);
-
-  const puedeRetroceder = indice > 0;
-  const puedeAvanzar = indice + ITEMS_POR_VISTA < productos.length;
-
-  const handlePrev = () => {
-    if (puedeRetroceder) setIndice(indice - 1);
-  };
-
-  const handleNext = () => {
-    if (puedeAvanzar) setIndice(indice + 1);
-  };
-
+export default function CarruselComponent() {
   return (
-    <div className="container my-4">
-      <div className="d-flex justify-content-between align-items-center">
-        <button
-          className="btn btn-outline-primary"
-          onClick={handlePrev}
-          disabled={!puedeRetroceder}
-        >
-          &#8592;
-        </button>
-        <div className="d-flex flex-row flex-nowrap" style={{ width: "80%" }}>
-          {productosAMostrar.map((producto) => (
-            <div
-              key={producto.id}
-              className="card mx-2"
-              style={{ minWidth: "30%", maxWidth: "30%" }}
-            >
+    <div className="max-w-7xl mx-auto mt-6 px-4">
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination]}
+        autoplay={{ delay: 3000 }}
+        loop
+        spaceBetween={20}
+        slidesPerView={3}
+        navigation
+        pagination={{ clickable: true }}
+        className="rounded-lg shadow-lg"
+        breakpoints={{
+          320: { slidesPerView: 1 },
+          768: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+        }}
+      >
+        {productos.map((producto) => (
+          <SwiperSlide key={producto.id}>
+            <div className="bg-white rounded-lg overflow-hidden shadow transition-transform hover:scale-105 cursor-pointer">
               <img
                 src={producto.img}
-                className="card-img-top"
                 alt={producto.nombre}
-                style={{ height: "200px", objectFit: "cover" }}
+                className="w-full h-64 object-cover"
               />
-              <div className="card-body">
-                <h5 className="card-title">{producto.nombre}</h5>
+              <div className="p-4 text-center font-semibold text-gray-800">
+                {producto.nombre}
               </div>
             </div>
-          ))}
-        </div>
-        <button
-          className="btn btn-outline-primary"
-          onClick={handleNext}
-          disabled={!puedeAvanzar}
-        >
-          &#8594;
-        </button>
-      </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 }
-
-export default CarruselMultiItem;

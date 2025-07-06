@@ -28,7 +28,6 @@ function DatosEnvioPage() {
 
       const data = await response.json();
       navigate("/pasarela-pago", { state: { clientSecret: data.clientSecret } });
-
     } catch (error) {
       console.error("Error al crear intento de pago:", error);
       alert("No se pudo procesar el pedido, revisa tu carrito.");
@@ -36,35 +35,50 @@ function DatosEnvioPage() {
   };
 
   return (
-    <div className="container mt-5">
-      <h3>Datos de Envío</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label>Dirección:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label>Teléfono:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Confirmar pedido
-        </button>
-      </form>
+    <div className="flex flex-col md:flex-row items-center justify-center p-8 bg-gray-50 min-h-screen transition-all">
+      <div className="hidden md:block md:w-1/2">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/2290/2290822.png"
+          alt="Envío"
+          className="w-full max-w-sm mx-auto animate-pulse"
+        />
+      </div>
+      <div className="w-full md:w-1/2 bg-white rounded-lg shadow-lg p-8 transition-all hover:shadow-xl">
+        <h2 className="text-2xl font-bold mb-6 text-center">🚚 Datos de Envío</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block mb-1 font-semibold">Dirección</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-600 transition-all"
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              required
+              placeholder="Ej: Av. Los Héroes 123"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold">Teléfono</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-600 transition-all"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              required
+              placeholder="Ej: 987654321"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition-all"
+          >
+            Confirmar Pedido
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
 
 export default DatosEnvioPage;
+

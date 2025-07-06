@@ -58,3 +58,12 @@ body {
   text-align: left;
 }
 */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.main-container {
+  min-height: calc(100vh - 120px); /* ajusta el 120px si header/footer cambia de tamaño */
+}

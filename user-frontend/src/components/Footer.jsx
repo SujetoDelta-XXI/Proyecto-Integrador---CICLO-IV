@@ -1,73 +1,47 @@
-import { FaYoutube, FaInstagram, FaTiktok } from "react-icons/fa";
-import { BsDiscord } from "react-icons/bs";
-
-const footerLinks = [
-  {
-    title: "Navegación",
-    links: [
-      { text: "Artículos y Tallas", url: "#" },
-      { text: "Opciones de Personalización", url: "#" },
-      { text: "Envíos", url: "#" },
-      { text: "Pagos y Facturas", url: "#" },
-      { text: "Cambios y Devoluciones", url: "#" },
-      { text: "Novedades", url: "#" },
-      { text: "Contacto", url: "#" },
-    ],
-  },
-  {
-    title: "Soporte",
-    links: [
-      { text: "Preguntas Frecuentes", url: "#" },
-      { text: "Atención al Cliente", url: "#" },
-    ],
-  },
-  {
-    title: "Empresa",
-    links: [
-      { text: "Sobre Nosotros", url: "#" },
-      { text: "Trabaja con Nosotros", url: "#" },
-      { text: "Blog", url: "#" },
-    ],
-  },
-  {
-    title: "Políticas",
-    links: [
-      { text: "Términos y Condiciones", url: "#" },
-      { text: "Política de Privacidad", url: "#" },
-      { text: "Cookies", url: "#" },
-    ],
-  },
-];
+import { FaFacebookF, FaInstagram, FaTwitter } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 function Footer() {
   return (
-    <footer className="bg-gray-900 text-white px-6 pt-10 pb-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 text-sm">
-        {footerLinks.map((col, idx) => (
-          <div key={idx}>
-            <h4 className="text-white font-semibold mb-3 text-base border-b border-gray-600 pb-1">{col.title}</h4>
-            <ul>
-              {col.links.map((link, i) => (
-                <li key={i} className="mb-2">
-                  <a href={link.url} className="hover:text-gray-300 transition">{link.text}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+    <footer className="bg-slate-900 text-gray-300 py-10 border-t border-slate-700 mt-[-1px]">
 
-      <div className="mt-10 border-t border-gray-700 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
-        <p className="mb-2 md:mb-0">© 2024 EstiloYa. Todos los derechos reservados.</p>
-        <div className="flex gap-4 text-xl">
-          <a href="#" className="hover:text-red-500 transition"><FaYoutube /></a>
-          <a href="#" className="hover:text-pink-500 transition"><FaInstagram /></a>
-          <a href="#" className="hover:text-blue-500 transition"><BsDiscord /></a>
-          <a href="#" className="hover:text-white transition"><FaTiktok /></a>
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* contacto */}
+        <div>
+          <h4 className="text-xl font-bold mb-4 text-white">Contacto</h4>
+          <p className="text-sm flex items-center gap-1">📍 Av. EstiloYa 123, Ciudad Creativa</p>
+          <p className="text-sm flex items-center gap-1">📞 +51 987 654 321</p>
+          <p className="text-sm flex items-center gap-1">✉ contacto@estiloya.com</p>
         </div>
+
+        {/* navegación */}
+        <div>
+          <h4 className="text-xl font-bold mb-4 text-white">Navegación</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/tienda" className="hover:text-indigo-400 transition">Tienda</Link></li>
+            <li><Link to="/productos" className="hover:text-indigo-400 transition">Productos</Link></li>
+            <li><Link to="/login" className="hover:text-indigo-400 transition">Iniciar Sesión</Link></li>
+            <li><Link to="/register" className="hover:text-indigo-400 transition">Registro</Link></li>
+          </ul>
+        </div>
+
+        {/* redes */}
+        <div>
+          <h4 className="text-xl font-bold mb-4 text-white">Síguenos</h4>
+          <div className="flex space-x-4 text-xl">
+            <a href="#" className="hover:text-indigo-400 transition"><FaFacebookF /></a>
+            <a href="#" className="hover:text-indigo-400 transition"><FaInstagram /></a>
+            <a href="#" className="hover:text-indigo-400 transition"><FaTwitter /></a>
+          </div>
+        </div>
+      </div>
+      <div className="mt-8 text-center text-xs text-gray-500">
+        © 2025 EstiloYa. Todos los derechos reservados.
       </div>
     </footer>
   );
 }
 
 export default Footer;
+
+

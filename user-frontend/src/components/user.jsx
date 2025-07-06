@@ -1,15 +1,13 @@
 function UserComponent({ nombre, correo }) {
   return (
-    <div className="card mx-auto mt-5" style={{ maxWidth: "400px" }}>
-      <div className="card-body">
-        <h4 className="card-title mb-3">Perfil de Usuario</h4>
-        <p className="card-text">
-          <strong>Nombre:</strong> {nombre}
-        </p>
-        <p className="card-text">
-          <strong>Correo:</strong> {correo}
-        </p>
-      </div>
+    <div className="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
+      <h4 className="text-xl font-bold mb-4 text-indigo-700">👤 Perfil de Usuario</h4>
+      <p className="text-gray-800 mb-2">
+        <span className="font-semibold">Nombre:</span> {nombre}
+      </p>
+      <p className="text-gray-800">
+        <span className="font-semibold">Correo:</span> <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{correo}</span>
+      </p>
     </div>
   );
 }

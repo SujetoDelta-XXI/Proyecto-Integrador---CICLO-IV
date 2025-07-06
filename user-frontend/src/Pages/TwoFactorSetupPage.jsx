@@ -32,7 +32,7 @@ function TwoFactorSetupPage() {
         console.log("Usuario autenticado:", data);
 
         setMetodos({
-          sms: !!data.telefono,
+          sms: false,
           correo: !!data.correoAlternativo,
         });
       } catch {

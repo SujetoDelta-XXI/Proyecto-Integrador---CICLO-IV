@@ -10,16 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@react-oauth/google": "^0.12.2",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.4.0",
+    "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/vite": "^4.1.7",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
     "bootstrap": "^5.3.6",
+    "canvas-confetti": "^1.9.3",
+    "framer-motion": "^12.23.0",
+    "rc-slider": "^11.1.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.6.0",
     "react-social-icons": "^6.24.0",
+    "react-toastify": "^11.0.5",
+    "swiper": "^11.2.10",
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {

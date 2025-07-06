@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
+import { toast } from "react-toastify";
 import TermsAndConditions from "./TermsAndConditions";
 
-// Necesario para que el modal funcione correctamente
 Modal.setAppElement("#root");
 
 function Register() {
@@ -12,8 +12,6 @@ function Register() {
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
-
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -37,17 +35,12 @@ function Register() {
     e.preventDefault();
 
     if (!correo.trim().endsWith("@tecsup.edu.pe")) {
-      alert("El correo debe ser institucional de Tecsup (@tecsup.edu.pe)");
+      toast.error("El correo debe ser institucional @tecsup.edu.pe");
       return;
     }
 
     if (!aceptaTerminos) {
-      alert("Debes aceptar los Términos y Condiciones.");
-      return;
-    }
-
-    if (!aceptaPrivacidad) {
-      alert("Debes aceptar la Política de Privacidad.");
+      toast.warn("Debes aceptar los Términos y Condiciones.");
       return;
     }
 
@@ -56,132 +49,142 @@ function Register() {
       apellidos,
       correo: correo.trim(),
       contraseña,
-      telefono
-      // ❌ Se eliminó tipoUsuario porque no lo espera tu backend
+      telefono,
     };
 
     try {
       const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(usuario)
       });
 
       if (response.ok) {
         const result = await response.json();
-        alert(result.message || 'Usuario registrado con éxito');
+        toast.success(result.message || "Usuario registrado con éxito");
         setCorreo('');
         setContraseña('');
         setNombre('');
         setApellidos('');
         setTelefono('');
-        setAceptaPrivacidad(false);
         setAceptaTerminos(false);
-        navigate('/login'); // Opcional: redirige a login
+        navigate('/login');
       } else {
         const errorText = await response.json().catch(() => null);
-        alert(`Error al registrar usuario: ${errorText || 'Intenta nuevamente'}`);
+        toast.error(`Error: ${errorText || "Intenta nuevamente"}`);
       }
     } catch (err) {
-      alert('Error de conexión con el backend');
+      toast.error("Error de conexión con el backend");
       console.error(err);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 text-left">
-      <h1 className="text-4xl font-bold mb-6">EstiloYa</h1>
-      <div className="text-lg font-medium mb-4 mt-2">DATOS PERSONALES</div>
-      <form className="flex flex-col" onSubmit={handleRegister}>
-        <label className="block text-base mb-1 mt-4 font-normal">
-          EMAIL
-          <input
-            type="email"
-            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-            value={correo}
-            onChange={e => setCorreo(e.target.value)}
-          />
-        </label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
+      <div className="w-full max-w-lg bg-white p-8 rounded shadow animate-fadeIn">
+        <h1 className="text-4xl font-extrabold text-center mb-4 text-indigo-600">Crea tu cuenta</h1>
+        <p className="text-gray-600 text-center mb-6">Forma parte de <span className="font-semibold">EstiloYa</span></p>
+        <form className="space-y-4" onSubmit={handleRegister}>
+          <div>
+            <label className="block mb-1 font-medium">Email institucional</label>
+            <input
+              type="email"
+              className="w-full border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+              placeholder="usuario@tecsup.edu.pe"
+              value={correo}
+              onChange={e => setCorreo(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Contraseña</label>
+            <input
+              type="password"
+              className="w-full border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+              value={contraseña}
+              onChange={e => setContraseña(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-medium">Nombre</label>
+              <input
+                type="text"
+                className="w-full border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Apellidos</label>
+              <input
+                type="text"
+                className="w-full border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+                value={apellidos}
+                onChange={e => setApellidos(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Teléfono</label>
+            <input
+              type="tel"
+              className="w-full border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+              value={telefono}
+              onChange={e => setTelefono(e.target.value)}
+            />
+          </div>
 
-        <label className="block text-base mb-1 mt-4 font-normal">
-          CONTRASEÑA
-          <input
-            type="password"
-            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-            value={contraseña}
-            onChange={e => setContraseña(e.target.value)}
-          />
-        </label>
+          <div className="flex items-center mt-2">
+            <input
+              type="checkbox"
+              id="terminos"
+              checked={aceptaTerminos}
+              onChange={() => {}}
+              disabled
+            />
+            <label
+              htmlFor="terminos"
+              className="ml-2 text-sm text-indigo-600 cursor-pointer"
+              onClick={handleAbrirModal}
+            >
+              Acepto los <span className="underline">Términos y Condiciones</span>
+            </label>
+          </div>
 
-        <label className="block text-base mb-1 mt-4 font-normal">
-          NOMBRE
-          <input
-            type="text"
-            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-          />
-        </label>
-
-        <label className="block text-base mb-1 mt-4 font-normal">
-          APELLIDOS
-          <input
-            type="text"
-            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-            value={apellidos}
-            onChange={e => setApellidos(e.target.value)}
-          />
-        </label>
-
-        <label className="block text-base mb-1 mt-4 font-normal">
-          TELÉFONO
-          <input
-            type="tel"
-            className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-            value={telefono}
-            onChange={e => setTelefono(e.target.value)}
-          />
-        </label>
-
-        <div className="flex items-center mt-2 mb-2">
-          <input
-            type="checkbox"
-            id="terminos"
-            checked={aceptaTerminos}
-            onChange={() => {}}
-            disabled
-          />
-          <label
-            htmlFor="terminos"
-            className="text-sm ml-2 text-gray-800 cursor-pointer underline"
-            style={{ color: "#1976d2", textDecoration: "underline" }}
-            onClick={handleAbrirModal}
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded transition disabled:opacity-50"
+            disabled={!aceptaTerminos}
           >
-            He leído y acepto los <span style={{color:"#1976d2"}}>Términos y Condiciones</span>
-          </label>
-        </div>
+            Crear cuenta
+          </button>
+        </form>
 
+        {/* MODAL SIN motion */}
         <Modal
           isOpen={showModal}
           onRequestClose={handleCerrarModal}
           contentLabel="Términos y Condiciones"
-          className="bg-white rounded-lg shadow-xl p-0 max-w-xl w-full mx-auto mt-24 border border-gray-300 outline-none"
-          overlayClassName="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="outline-none border-none bg-transparent flex justify-center items-center"
+          overlayClassName="fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity duration-300"
         >
-          <div className="p-6">
-            <TermsAndConditions />
-            <div className="flex justify-end gap-4 mt-6">
+          <div className="rounded-lg shadow-2xl overflow-hidden max-w-2xl w-full border border-gray-300 bg-white animate-fadeIn">
+            <div className="bg-gradient-to-r from-indigo-600 to-indigo-400 px-6 py-4 text-white text-xl font-bold">
+              Términos y Condiciones
+            </div>
+            <div className="p-6 max-h-[400px] overflow-y-auto text-gray-700 space-y-4">
+              <TermsAndConditions />
+            </div>
+            <div className="flex justify-end gap-4 bg-gray-50 p-4 border-t">
               <button
-                className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 font-semibold"
+                className="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 font-semibold transition"
                 onClick={handleAceptarTerminos}
                 type="button"
               >
                 Aceptar
               </button>
               <button
-                className="bg-gray-400 text-white px-5 py-2 rounded hover:bg-gray-500 font-semibold"
+                className="bg-gray-300 text-gray-700 px-5 py-2 rounded hover:bg-gray-400 transition"
                 onClick={handleCerrarModal}
                 type="button"
               >
@@ -190,27 +193,7 @@ function Register() {
             </div>
           </div>
         </Modal>
-
-        <div className="flex items-center mt-2 mb-6">
-          <input
-            type="checkbox"
-            id="privacy"
-            checked={aceptaPrivacidad}
-            onChange={e => setAceptaPrivacidad(e.target.checked)}
-          />
-          <label htmlFor="privacy" className="text-sm ml-2 text-gray-800">
-            He podido leer y entiendo la Política de Privacidad
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full py-3 bg-white text-gray-800 border border-gray-800 text-base cursor-pointer rounded-none transition-colors duration-200 hover:bg-gray-800 hover:text-white"
-          disabled={!aceptaTerminos || !aceptaPrivacidad}
-        >
-          CREAR CUENTA
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

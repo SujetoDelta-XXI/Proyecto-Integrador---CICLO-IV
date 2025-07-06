@@ -1,1 +1,13 @@
 @import "tailwindcss";
+html, body, #root {
+  height: 100%;
+   margin: 0;
+  padding: 0;
+}
+#root {
+  display: flex;
+  flex-direction: column;
+}
+.hero-text {
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+}
