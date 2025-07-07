@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaUserCircle } from "react-icons/fa";
+import { useCarrito } from "../context/CarritoContext";
 
 function Header() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const { cantidadCarrito } = useCarrito();
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -11,65 +14,51 @@ function Header() {
   };
 
   return (
-    <header className="w-full bg-white flex items-center justify-between py-4 px-8 border-b border-gray-200 box-border sticky top-0 z-10">
-      <Link to="/" className="text-2xl font-bold text-gray-900 tracking-wide no-underline">
-        EstiloYa
-      </Link>
-      <nav className="flex gap-6">
-        <Link to="/tienda" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
-          Tienda
-        </Link>
-        <Link to="/productos" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
-          Productos
-        </Link>
-        <Link to="/disenar" className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500">
-          Diseñar
-        </Link>
-        {token ? (
-          <>
-            <Link
-              to="/perfil"
-              className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
-            >
-              Perfil
-            </Link>
-            <Link
-              to="/mis-disenos"
-              className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
-            >
-              Mis Diseños
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-red-600 text-lg font-medium transition-colors duration-200 hover:text-red-800"
-            >
-              Cerrar sesión
-            </button>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
-            >
-              Registro
-            </Link>
-          </>
-        )}
-        <Link
-          to="/carrito"
-          className="text-gray-900 no-underline text-lg font-medium transition-colors duration-200 hover:text-indigo-500"
-        >
-          <FaShoppingCart size={20} />
-        </Link>
-      </nav>
-    </header>
+<header className="fixed top-0 left-0 w-full z-50 bg-slate-900 shadow transition-all duration-300 h-16">
+
+
+  <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6 text-slate-900">
+    <Link
+      to="/"
+      className="text-2xl font-extrabold tracking-wide hover:text-indigo-600 transition"
+    >
+      Estilo<span className="text-indigo-600">Ya</span>
+    </Link>
+    <nav className="flex items-center gap-6 text-sm font-semibold">
+      <Link to="/tienda" className="hover:text-indigo-600 transition">Home</Link>
+      <Link to="/productos" className="hover:text-indigo-600 transition">Productos</Link>
+      {token ? (
+        <>
+          <Link to="/perfil" className="hover:text-indigo-600 transition">
+            <FaUserCircle className="inline mr-1" /> Perfil
+          </Link>
+          <button
+  onClick={handleLogout}
+  className="text-indigo-400 hover:text-indigo-600 transition"
+>
+  Cerrar Sesión
+</button>
+
+        </>
+      ) : (
+        <>
+          <Link to="/login" className="hover:text-indigo-600 transition">Login</Link>
+          <Link to="/register" className="hover:text-indigo-600 transition">Registro</Link>
+        </>
+      )}
+      <Link to="/carrito" className="hover:text-indigo-600 transition relative">
+  <FaShoppingCart className="text-xl" />
+  {cantidadCarrito > 0 && (
+    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+      {cantidadCarrito}
+    </span>
+  )}
+</Link>
+
+    </nav>
+  </div>
+</header>
+
   );
 }
 

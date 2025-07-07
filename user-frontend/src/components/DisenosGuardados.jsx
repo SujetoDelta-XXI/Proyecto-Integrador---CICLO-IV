@@ -23,7 +23,7 @@ function DisenosGuardados() {
         if (!res.ok) throw new Error("Error al obtener los diseños");
         const data = await res.json();
         setDisenos(data);
-      } catch (err) {
+      } catch {
         setError("No se pudieron cargar los diseños guardados");
       } finally {
         setLoading(false);

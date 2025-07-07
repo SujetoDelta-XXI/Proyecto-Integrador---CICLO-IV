@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ResetPassword() {
   const [codigo, setCodigo] = useState("");
   const [nuevaContraseña, setNuevaContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
-  const [error, setError] = useState("");
-  const [exito, setExito] = useState(false);
+  const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Leer el token de la URL al cargar el componente
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
@@ -21,16 +21,16 @@ function ResetPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     if (!codigo || !nuevaContraseña || !confirmarContraseña) {
-      setError("Por favor, completa todos los campos.");
+      toast.warn("Por favor completa todos los campos");
       return;
     }
     if (nuevaContraseña !== confirmarContraseña) {
-      setError("Las contraseñas no coinciden.");
+      toast.error("Las contraseñas no coinciden");
       return;
     }
+    setCargando(true);
 
     try {
       const response = await fetch("http://localhost:8080/api/auth/reset-password", {
@@ -42,85 +42,62 @@ function ResetPassword() {
         }),
       });
       if (response.ok) {
-        setExito(true);
+        toast.success("¡Contraseña restablecida correctamente!");
+        navigate("/loginForm");
       } else {
-        setError("El código es inválido o ha expirado.");
+        toast.error("El código es inválido o ha expirado.");
       }
-    } catch  {
-      setError("Error de conexión con el servidor.");
+    } catch {
+      toast.error("Error de conexión con el servidor.");
     }
+    setCargando(false);
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 text-left">
-      <div className="text-2xl font-normal mb-6 mt-4">EstiloYa</div>
-      <h1 className="text-3xl font-bold mb-2">Restablecer contraseña</h1>
-      <p className="text-base text-gray-800 mb-6">
-        Ingresa el código que recibiste en tu correo y tu nueva contraseña.
-      </p>
-      {!exito ? (
-        <form className="flex flex-col" onSubmit={handleSubmit}>
-          <label className="block text-base mb-1 mt-4 font-normal">
-            Código de verificación
-            <input
-              type="text"
-              className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-              value={codigo}
-              onChange={e => setCodigo(e.target.value)}
-              required
-            />
-          </label>
-          <label className="block text-base mb-1 mt-4 font-normal">
-            Nueva contraseña
-            <input
-              type="password"
-              className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-              value={nuevaContraseña}
-              onChange={e => setNuevaContraseña(e.target.value)}
-              required
-            />
-          </label>
-          <label className="block text-base mb-1 mt-4 font-normal">
-            Confirmar contraseña
-            <input
-              type="password"
-              className="w-full p-2 mt-1 bg-gray-100 text-base border-none rounded-none box-border"
-              value={confirmarContraseña}
-              onChange={e => setConfirmarContraseña(e.target.value)}
-              required
-            />
-          </label>
-          {error && (
-            <div className="text-red-600 text-sm mt-2 mb-2">{error}</div>
-          )}
+    <div className="min-h-screen flex items-center justify-center px-4 bg-slate-100">
+      <div className="w-full max-w-md bg-white shadow-lg rounded p-6">
+        <h1 className="text-3xl font-bold mb-4 text-center">Restablecer contraseña</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Código de verificación"
+            className="border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Nueva contraseña"
+            className="border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+            value={nuevaContraseña}
+            onChange={(e) => setNuevaContraseña(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirmar nueva contraseña"
+            className="border rounded px-3 py-2 focus:ring focus:ring-indigo-200"
+            value={confirmarContraseña}
+            onChange={(e) => setConfirmarContraseña(e.target.value)}
+            required
+          />
           <button
+            className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
             type="submit"
-            className="w-full py-3 text-base rounded-none border border-gray-800 mb-3 cursor-pointer transition-colors duration-200 bg-gray-900 text-white mt-6"
+            disabled={cargando}
           >
-            CAMBIAR CONTRASEÑA
+            {cargando ? "Cambiando..." : "Cambiar Contraseña"}
           </button>
           <button
             type="button"
-            className="w-full py-3 text-base rounded-none border border-gray-800 mb-3 cursor-pointer transition-colors duration-200 bg-white text-gray-800"
             onClick={() => navigate("/loginForm")}
+            className="border border-gray-700 py-2 rounded hover:bg-gray-700 hover:text-white transition"
           >
             Cancelar
           </button>
         </form>
-      ) : (
-        <div className="mt-8">
-          <div className="text-green-700 text-lg font-semibold mb-4">
-            ¡Contraseña restablecida correctamente!
-          </div>
-          <button
-            type="button"
-            className="w-full py-3 text-base rounded-none border border-gray-800 mt-6 cursor-pointer transition-colors duration-200 bg-white text-gray-800"
-            onClick={() => navigate("/loginForm")}
-          >
-            Volver al inicio de sesión
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

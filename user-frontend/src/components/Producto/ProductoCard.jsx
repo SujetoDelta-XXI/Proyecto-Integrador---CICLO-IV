@@ -1,8 +1,11 @@
 import React from "react";
+import { useCarrito } from "../../context/CarritoContext";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 function ProductoCard({ producto }) {
   const navigate = useNavigate();
+  const { actualizarCarrito } = useCarrito();
   const { id, nombre, descripcion, precio, imagen, categoria, descuento } = producto;
 
   const tieneDescuento = descuento && descuento.porcentaje > 0;
@@ -13,7 +16,7 @@ function ProductoCard({ producto }) {
   const agregarAlCarrito = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://192.168.18.2:8080/api/usuario/carrito/agregar", {
+      const res = await fetch("http://localhost:8080/api/usuario/carrito/agregar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,19 +24,20 @@ function ProductoCard({ producto }) {
         },
         body: JSON.stringify({ productoId: id, cantidad: 1 }),
       });
-      if (!res.ok) throw new Error("Error al agregar al carrito");
-      alert("Producto agregado al carrito ✅");
-    } catch (err) {
-      console.error(err);
-      alert("Error al agregar al carrito ❌");
+      if (!res.ok) throw new Error();
+      toast.success("✅ Producto agregado al carrito");
+      await actualizarCarrito();   // 👈 recuenta el carrito del contexto
+
+    } catch {
+      toast.error("❌ Error al agregar al carrito");
     }
   };
 
   return (
-    <div className="border rounded-xl overflow-hidden shadow hover:shadow-lg transition hover:scale-[1.02] bg-white">
+    <div className="border rounded-xl overflow-hidden shadow hover:shadow-xl transition hover:scale-105 bg-white">
       <div className="relative">
         {tieneDescuento && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+          <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
             -{descuento.porcentaje}%
           </span>
         )}
@@ -46,28 +50,28 @@ function ProductoCard({ producto }) {
       </div>
       <div className="p-4">
         <h3
-          className="text-xl font-semibold cursor-pointer hover:underline"
+          className="text-lg font-bold text-slate-800 hover:underline cursor-pointer"
           onClick={() => navigate(`/producto/${id}`)}
         >
           {nombre}
         </h3>
-        <p className="text-gray-600 text-sm">{categoria}</p>
-        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{descripcion}</p>
-        <div className="mt-2">
+        <p className="text-gray-500 text-xs mb-2">{categoria}</p>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{descripcion}</p>
+        <div>
           {tieneDescuento ? (
             <>
               <span className="text-red-600 font-bold text-lg mr-2">S/ {precioFinal.toFixed(2)}</span>
-              <span className="line-through text-gray-500 text-sm">S/ {precio.toFixed(2)}</span>
+              <span className="line-through text-gray-400 text-sm">S/ {precio.toFixed(2)}</span>
             </>
           ) : (
             <span className="text-gray-800 font-semibold text-lg">S/ {precio.toFixed(2)}</span>
           )}
         </div>
         <button
-          className="mt-4 w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
           onClick={agregarAlCarrito}
+          className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded transition"
         >
-          Agregar al carrito
+          🛒 Agregar al carrito
         </button>
       </div>
     </div>
@@ -75,5 +79,7 @@ function ProductoCard({ producto }) {
 }
 
 export default ProductoCard;
+
+
 
 

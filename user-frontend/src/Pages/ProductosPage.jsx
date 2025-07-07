@@ -4,62 +4,74 @@ import SidebarFilters from "../components/Producto/SidebarFilters";
 
 function ProductosPage() {
   const [productos, setProductos] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
-  const [search, setSearch] = useState("");
-  const [price, setPrice] = useState({ min: "", max: "" });
+  const [price, setPrice] = useState({ min: 1, max: 200 });
   const [selectedCategory, setSelectedCategory] = useState("");
 
+  // paginación
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   useEffect(() => {
+    const controller = new AbortController();
+
     const timeout = setTimeout(() => {
       const fetchProductos = async () => {
-        setCargando(true);
         try {
+          setCargando(true);
+
           const queryParams = new URLSearchParams();
-          if (search) queryParams.append("nombre", search);
           if (selectedCategory) queryParams.append("categoriaId", selectedCategory);
           if (price.min) queryParams.append("minPrecio", price.min);
           if (price.max) queryParams.append("maxPrecio", price.max);
+          queryParams.append("page", page);
+          queryParams.append("size", 6);
 
           const url = `http://localhost:8080/api/usuario/productos?${queryParams.toString()}`;
           const token = localStorage.getItem("token");
 
           const response = await fetch(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
           });
 
           if (!response.ok) throw new Error("Error al obtener los productos");
 
           const data = await response.json();
           setProductos(data.content || []);
+          setTotalPages(data.totalPages || 0);
         } catch (error) {
-          setError(error.message);
+          if (error.name !== "AbortError") {
+            console.error(error.message);
+          }
         } finally {
           setCargando(false);
         }
       };
 
       fetchProductos();
-    }, 300);
+    }, 500); // debounce 500ms
 
-    return () => clearTimeout(timeout);
-  }, [search, price, selectedCategory]);
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [price, selectedCategory, page]);
 
-  if (cargando) return <p className="text-center mt-10 text-lg text-gray-600 animate-pulse">Cargando productos...</p>;
-  if (error) return <p className="text-red-600 text-center mt-10 font-semibold">{error}</p>;
+  if (cargando)
+    return (
+      <p className="text-center mt-10 text-lg text-gray-600 animate-pulse">
+        Cargando productos...
+      </p>
+    );
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row gap-8">
-      
       {/* Filtros */}
-      <aside className="w-full md:w-1/4 md:h-[calc(100vh-120px)] md:sticky md:top-[100px] overflow-y-auto bg-white/60 backdrop-blur-md border border-gray-200 rounded-xl p-6 shadow transition-all">
+      <aside className="w-full md:w-1/4 h-fit md:sticky md:top-[100px] bg-white/60 backdrop-blur-md border border-gray-200 rounded-xl p-6 shadow">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Filtrar</h2>
         <SidebarFilters
-          search={search}
-          setSearch={setSearch}
           price={price}
           setPrice={setPrice}
           selectedCategory={selectedCategory}
@@ -87,11 +99,29 @@ function ProductosPage() {
             </p>
           )}
         </div>
+
+        {/* paginación */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 gap-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`px-4 py-2 rounded border ${
+                  i === page
+                    ? "bg-black text-white"
+                    : "bg-white text-black hover:bg-gray-200"
+                } transition`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
 }
 
 export default ProductosPage;
-
 
