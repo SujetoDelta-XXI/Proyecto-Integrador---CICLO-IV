@@ -1,42 +1,50 @@
-from pathlib import Path
 import os
+from pathlib import Path
 import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# -----------------------
+# Paths
+# -----------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', default='your secret key')
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# -----------------------
+# Security
+# -----------------------
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key')
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = []
+# -----------------------
+# Hosts
+# -----------------------
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
 
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
+# -----------------------
+# Applications
+# -----------------------
 INSTALLED_APPS = [
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party
     "rest_framework",
     "corsheaders",
+    # Tu app
     "store",
 ]
 
+# -----------------------
+# Middleware
+# -----------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",         # WhiteNoise para estáticos
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -45,8 +53,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# -----------------------
+# CORS
+# -----------------------
 CORS_ALLOW_ALL_ORIGINS = True
 
+# -----------------------
+# REST Framework
+# -----------------------
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -54,27 +68,30 @@ REST_FRAMEWORK = {
     ],
 }
 
-TIME_ZONE = "America/Lima"
-USE_TZ = True
-
-# Define aquí el módulo de URLs principal
+# -----------------------
+# URLs & WSGI
+# -----------------------
 ROOT_URLCONF = 'estiloya_api.urls'
-
-# Define también la aplicación WSGI (útil en despliegue)
 WSGI_APPLICATION = 'estiloya_api.wsgi.application'
 
-
+# -----------------------
+# Database
+# -----------------------
 DATABASES = {
     'default': dj_database_url.config(
-        default= 'sqlite:///db.sqlite3',
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
         conn_max_age=600,
+        ssl_require=not DEBUG,
     )
 }
 
+# -----------------------
+# Templates
+# -----------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [],  # si tienes plantillas fuera de las apps, añádelas aquí
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,51 +104,32 @@ TEMPLATES = [
     },
 ]
 
-
+# -----------------------
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
+# -----------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
+# -----------------------
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
+# -----------------------
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'America/Lima'
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# -----------------------
+# Static files
+# -----------------------
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
+# -----------------------
+# Default primary key
+# -----------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
