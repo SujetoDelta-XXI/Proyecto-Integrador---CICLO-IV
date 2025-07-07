@@ -14,17 +14,16 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
     if (metodos.correo && !metodos.sms) setMetodo("correo");
   }, [metodos]);
 
-  // PASO 2: si elige correo alternativo y ya está registrado, enviar automáticamente
+  // PASO 2: autoenviar si correo alternativo ya está registrado
   useEffect(() => {
     if (metodo === "correo" && metodos.correo && !enviado) {
-      handleEnviarCodigo(); // autoenvío
+      handleEnviarCodigo();
     }
   }, [metodo, metodos.correo, enviado]);
 
   const handleRegistrarCorreo = async () => {
     setCargando(true);
     setMensaje("");
-
     try {
       const res = await fetch(
         `http://localhost:8080/api/auth/2fa/register-email?alternativo=${correoAlt}`,
@@ -37,9 +36,8 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
       );
 
       if (res.ok) {
-       setMensaje("Correo registrado correctamente, elige método de verificación.");
-  // forzar recarga
-  window.location.href = "/two-factor-setup";
+        setMensaje("Correo registrado correctamente, elige método de verificación.");
+        window.location.href = "/two-factor-setup"; // recargar para forzar
       } else {
         const text = await res.text();
         setMensaje("Error al registrar: " + text);
@@ -78,9 +76,13 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
   };
 
   const handleVerificar = async () => {
+    if (!codigo || codigo.trim() === "") {
+      setMensaje("Por favor ingresa el código recibido.");
+      return;
+    }
+
     setCargando(true);
     setMensaje("");
-    
     try {
       const res = await fetch(
         `http://localhost:8080/api/auth/login/verify-2fa?code=${codigo}`,
@@ -107,7 +109,7 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
     setCargando(false);
   };
 
-  // PASO 1: registro correo
+  // PASO 1: registrar correo alternativo
   if (registrarCorreoForzado) {
     return (
       <div className="container mt-5">
@@ -143,7 +145,7 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
           value={metodo}
           onChange={(e) => {
             setMetodo(e.target.value);
-            setEnviado(false); // resetear si cambia
+            setEnviado(false);
           }}
         >
           {metodos.sms && <option value="sms">SMS</option>}
@@ -170,6 +172,7 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
             placeholder="Código recibido"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
+            maxLength={6}
           />
           <button
             className="btn btn-success"
@@ -190,4 +193,3 @@ function TwoFactorSetup({ metodos, onSuccess, onCancel, registrarCorreoForzado }
 }
 
 export default TwoFactorSetup;
-
