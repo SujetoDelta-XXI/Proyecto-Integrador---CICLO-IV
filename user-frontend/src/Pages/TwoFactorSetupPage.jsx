@@ -1,4 +1,3 @@
-// src/pages/TwoFactorSetupPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TwoFactorSetup from "../components/TwoFactorSetup";
@@ -6,6 +5,7 @@ import TwoFactorSetup from "../components/TwoFactorSetup";
 function TwoFactorSetupPage() {
   const [metodos, setMetodos] = useState({ sms: false, correo: false });
   const [cargando, setCargando] = useState(true);
+  const [registrarCorreoForzado, setRegistrarCorreoForzado] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,12 +31,23 @@ function TwoFactorSetupPage() {
         const data = await res.json();
         console.log("Usuario autenticado:", data);
 
+        // corregimos la lectura
+        const tiene2FA = data.tiene2FAConfigurado;
+        const correoAlternativo = data.correoAlternativo;
+
         setMetodos({
           sms: false,
-          correo: !!data.correoAlternativo,
+          correo: true, // asumimos que siempre correo habilitado
         });
-      } catch {
-        alert("Error al cargar métodos 2FA.");
+
+        // corregida la decisión:
+        setRegistrarCorreoForzado(tiene2FA === false || !correoAlternativo);
+
+        console.log("registrarCorreoForzado:", tiene2FA === false || !correoAlternativo);
+
+      } catch (error) {
+        console.error(error);
+        alert("Error al cargar datos del usuario.");
         navigate("/login");
       } finally {
         setCargando(false);
@@ -50,17 +61,16 @@ function TwoFactorSetupPage() {
     return <div className="text-center mt-10">Cargando datos...</div>;
   }
 
-  const registrarCorreoForzado = !metodos.correo; // forzar registro si no tiene correo alternativo
-
   return (
     <TwoFactorSetup
       metodos={metodos}
       registrarCorreoForzado={registrarCorreoForzado}
-      onSuccess={() => navigate("/")} // éxito total = vuelve al home
+      onSuccess={() => navigate("/")}
       onCancel={() => navigate("/")}
     />
   );
 }
 
 export default TwoFactorSetupPage;
+
 

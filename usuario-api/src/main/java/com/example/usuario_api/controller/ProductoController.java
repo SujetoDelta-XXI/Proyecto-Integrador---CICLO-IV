@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/usuario/productos")
+@CrossOrigin(origins = "*")
 public class ProductoController {
 
     private final ProductoService service;

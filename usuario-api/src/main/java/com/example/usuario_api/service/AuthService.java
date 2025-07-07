@@ -225,6 +225,33 @@ SecurityContextHolder.getContext().setAuthentication(auth);
 
         return jwtUtils.generateJwtToken(u);
     }
+
+    /** Métodos adicionales para el AuthController */
+    
+    /** Verificar contraseña */
+    public boolean verifyPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    /** Generar JWT */
+    public String generateJwt(String correo) {
+        Usuario usuario = usuarioRepo.findByCorreo(correo)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return jwtUtils.generateJwtToken(usuario);
+    }
+
+    /** Generar token temporal para 2FA */
+    public String generateTemporaryToken(String userId) {
+        Usuario usuario = usuarioRepo.findById(Long.parseLong(userId))
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return jwtUtils.generateJwtTokenTemporal(usuario);
+    }
+
+    /** Obtener email del token de Google */
+    public String getEmailFromGoogleToken(String googleToken) {
+        GoogleIdToken.Payload payload = googleVerifier.verify(googleToken);
+        return payload.getEmail();
+    }
 }
 
 

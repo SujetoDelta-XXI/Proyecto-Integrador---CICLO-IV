@@ -3,6 +3,7 @@ package com.example.usuario_api.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -101,5 +102,13 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    /** Método para compatibilidad con DTOs que esperan LocalDateTime */
+    public LocalDateTime getFechaRegistro() {
+        if (fecha_registro != null) {
+            return fecha_registro.atStartOfDay();
+        }
+        return null;
     }
 }
