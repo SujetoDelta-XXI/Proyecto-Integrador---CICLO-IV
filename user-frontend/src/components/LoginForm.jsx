@@ -29,10 +29,14 @@ function LoginForm() {
       }
       const data = await resp.json();
       if (data.requiere2FA) {
-        sessionStorage.setItem("tokenTemporal", data.jwt);
-        navigate("/two-factor-setup");
-        return;
-      }
+  sessionStorage.setItem("tokenTemporal", data.jwt);
+  sessionStorage.setItem("correoAuth", data.correoAlternativo);
+  sessionStorage.setItem("tiene2FA", data.tiene2FAConfigurado ? "1" : "0");
+  navigate("/two-factor-setup");
+  return;
+}
+
+
       guardarToken(data.jwt);
       alert("Login exitoso");
       navigate("/");

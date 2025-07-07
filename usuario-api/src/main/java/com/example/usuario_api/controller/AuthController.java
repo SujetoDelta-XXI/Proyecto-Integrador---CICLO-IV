@@ -100,7 +100,8 @@ public class AuthController {
             );
             
             // Verificar si tiene 2FA configurado
-            boolean tiene2FA = usuario.getCorreo_auth() != null;
+            boolean tiene2FA = usuario.getCorreo_auth() != null && usuario.getTiene_2fa() == 1;
+
             
             if (tiene2FA) {
                 // Usuario tiene 2FA configurado - requiere verificación
@@ -111,16 +112,20 @@ public class AuthController {
                 metodos.put("sms", usuario.getTelefono() != null);
                 
                 AuthResponseDto response = new AuthResponseDto(
-                    true,
-                    "Se requiere verificación 2FA",
-                    tokenTemporal,
-                    userDto,
-                    true,
-                    metodos,
-                    usuario.getCorreo(),
-                    usuario.getCorreo_auth(),
-                    true
-                );
+    true,
+    "Se requiere verificación 2FA",
+    tokenTemporal,
+    userDto,
+    true,
+    metodos,
+    usuario.getCorreo(),
+    usuario.getCorreo_auth(),
+    tiene2FA
+);
+
+
+
+
                 
                 return ResponseEntity.ok(response);
             } else {
