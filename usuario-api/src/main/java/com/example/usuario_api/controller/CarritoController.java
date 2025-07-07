@@ -14,7 +14,7 @@ import com.example.usuario_api.service.CarritoService;
 
 @RestController
 @RequestMapping("/api/usuario/carrito")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class CarritoController {
 
     private final CarritoService service;
