@@ -9,7 +9,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/pagos")
-@CrossOrigin(origins = "http://localhost:5173") // cambia si es necesario
+@CrossOrigin(origins = "*")
 public class PaymentController {
 
     @PostMapping("/crear-sesion")

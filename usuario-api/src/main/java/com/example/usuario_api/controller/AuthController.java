@@ -1,9 +1,9 @@
 package com.example.usuario_api.controller;
 
+import com.example.usuario_api.dto.AuthResponseDto;
+import com.example.usuario_api.dto.UsuarioResponseDto;
 import com.example.usuario_api.model.Usuario;
 import com.example.usuario_api.payload.SignupRequest;
-import com.example.usuario_api.payload.response.JwtResponse;
-import com.example.usuario_api.payload.response.Login2FaResponse;
 import com.example.usuario_api.repository.UsuarioRepository;
 import com.example.usuario_api.service.AuthService;
 import com.example.usuario_api.service.OtpService;
@@ -14,12 +14,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")  // ajusta según tu frontend
+@CrossOrigin(origins = "*")  // Permitir cualquier origen
 public class AuthController {
 
     private final AuthService auth;
@@ -32,126 +33,261 @@ public class AuthController {
         this.otpService = otpService;
     }
 
-    /** Registro */
+    /** Registro de Usuario */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody SignupRequest dto) {
-        return auth.register(dto)
-            ? ResponseEntity.ok(Map.of("message", "Usuario creado exitosamente"))
-            : ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Ya existe un usuario con ese correo"));
+        try {
+            boolean success = auth.register(dto);
+            if (success) {
+                // Buscar el usuario recién creado
+                Usuario usuario = usuarioRepo.findByCorreo(dto.getCorreo()).orElse(null);
+                if (usuario != null) {
+                    UsuarioResponseDto userDto = new UsuarioResponseDto(
+                        usuario.getId(),
+                        usuario.getNombre(),
+                        usuario.getApellidos(),
+                        usuario.getCorreo(),
+                        usuario.getTelefono(),
+                        usuario.getRol(),
+                        usuario.getFechaRegistro()
+                    );
+                    
+                    String jwt = auth.generateJwt(usuario.getCorreo());
+                    
+                    AuthResponseDto response = new AuthResponseDto(
+                        true,
+                        "Usuario registrado exitosamente",
+                        jwt,
+                        userDto,
+                        false
+                    );
+                    
+                    return ResponseEntity.ok(response);
+                }
+            }
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new AuthResponseDto(false, "Ya existe un usuario con ese correo"));
+                
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new AuthResponseDto(false, e.getMessage()));
+        }
     }
 
-    /** Login tradicional */
+    /** Login Tradicional */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         try {
-            Login2FaResponse resp = auth.login(body.get("correo"), body.get("contraseña"));
-            return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            String correo = body.get("correo");
+            String contraseña = body.get("contraseña");
+            
+            // Verificar si el usuario existe y las credenciales son correctas
+            Usuario usuario = usuarioRepo.findByCorreo(correo).orElse(null);
+            if (usuario == null || !auth.verifyPassword(contraseña, usuario.getContraseña())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponseDto(false, "Credenciales inválidas"));
+            }
+            
+            UsuarioResponseDto userDto = new UsuarioResponseDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellidos(),
+                usuario.getCorreo(),
+                usuario.getTelefono(),
+                usuario.getRol(),
+                usuario.getFechaRegistro()
+            );
+            
+            // Verificar si tiene 2FA configurado
+            boolean tiene2FA = usuario.getCorreo_auth() != null;
+            
+            if (tiene2FA) {
+                // Usuario tiene 2FA configurado - requiere verificación
+                String tokenTemporal = auth.generateTemporaryToken(usuario.getId().toString());
+                
+                Map<String, Boolean> metodos = new HashMap<>();
+                metodos.put("correo", true);
+                metodos.put("sms", usuario.getTelefono() != null);
+                
+                AuthResponseDto response = new AuthResponseDto(
+                    true,
+                    "Se requiere verificación 2FA",
+                    tokenTemporal,
+                    userDto,
+                    true,
+                    metodos,
+                    usuario.getCorreo(),
+                    usuario.getCorreo_auth(),
+                    true
+                );
+                
+                return ResponseEntity.ok(response);
+            } else {
+                // Usuario NO tiene 2FA configurado - debe configurarlo primero
+                // Generar token temporal para permitir configuración de correo alternativo
+                String tokenTemporal = auth.generateTemporaryToken(usuario.getId().toString());
+                
+                Map<String, Boolean> metodos = new HashMap<>();
+                metodos.put("correo", true);
+                metodos.put("sms", usuario.getTelefono() != null);
+                
+                AuthResponseDto response = new AuthResponseDto(
+                    true,
+                    "Debe configurar correo alternativo para 2FA",
+                    tokenTemporal,
+                    userDto,
+                    true, // Requiere configuración de 2FA
+                    metodos,
+                    usuario.getCorreo(),
+                    null, // No tiene correo alternativo
+                    false // No tiene 2FA configurado
+                );
+                
+                return ResponseEntity.ok(response);
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "Credenciales inválidas"));
         }
     }
 
     /** Verificar código 2FA y emitir nuevo JWT */
-@PostMapping("/login/verify-2fa")
-public ResponseEntity<?> verify2fa(@RequestParam String code) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @PostMapping("/login/verify-2fa")
+    public ResponseEntity<?> verify2fa(@RequestParam String code) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    if (authentication == null || !authentication.isAuthenticated()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
-    }
-
-    String idStr = authentication.getName(); // ahora getName() es el ID
-    System.out.println("→ id recibido en verify2fa (getName()): " + idStr);
-
-    try {
-        Long id = Long.parseLong(idStr);
-
-        Usuario u = usuarioRepo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-
-        String correoAlternativo = u.getCorreo_auth();
-        System.out.println("→ correo alternativo registrado: " + correoAlternativo);
-
-        if (correoAlternativo == null) {
-            return ResponseEntity.badRequest().body("No tiene correo alternativo registrado");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "Token inválido o expirado"));
         }
 
-        String jwt = auth.verify2Fa(idStr, code); // ya espera el id como string
+        String idStr = authentication.getName();
+        
+        try {
+            Long id = Long.parseLong(idStr);
+            Usuario usuario = usuarioRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        return ResponseEntity.ok(new JwtResponse(jwt));
-    } catch (IllegalArgumentException e) {
-        System.out.println("→ Error verify2fa: " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código inválido: " + e.getMessage());
+            // Verificar el código 2FA
+            String jwt = auth.verify2Fa(idStr, code);
+            
+            UsuarioResponseDto userDto = new UsuarioResponseDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellidos(),
+                usuario.getCorreo(),
+                usuario.getTelefono(),
+                usuario.getRol(),
+                usuario.getFechaRegistro()
+            );
+
+            AuthResponseDto response = new AuthResponseDto(
+                true,
+                "Verificación 2FA exitosa",
+                jwt,
+                userDto,
+                false
+            );
+
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "Código inválido"));
+        }
     }
-}
-
-
 
     /** Registrar correo alternativo para 2FA */
     @PostMapping("/2fa/register-email")
-public ResponseEntity<?> register2faEmail(@RequestParam String alternativo) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<?> register2faEmail(@RequestParam String alternativo) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    if (authentication == null || !authentication.isAuthenticated()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "No autorizado"));
+        }
+
+        String idStr = authentication.getName();
+        try {
+            auth.register2FaEmail(idStr, alternativo);
+            return ResponseEntity.ok(new AuthResponseDto(true, "Correo alternativo registrado exitosamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new AuthResponseDto(false, e.getMessage()));
+        }
     }
-
-    String idStr = authentication.getName();
-    try {
-        auth.register2FaEmail(idStr, alternativo);  // pasas el correo
-        return ResponseEntity.ok("Correo alternativo registrado");
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-}
-
 
     /** Enviar código por el método elegido (correo o sms) */
-@PostMapping("/2fa/send-code")
-public ResponseEntity<?> send2faCode(@RequestParam String metodo, Authentication auth) {
-    Long userId;
-    try {
-        userId = Long.parseLong(auth.getName());
-    } catch (NumberFormatException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido: ID de usuario no numérico");
+    @PostMapping("/2fa/send-code")
+    public ResponseEntity<?> send2faCode(@RequestParam String metodo, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "Token inválido o expirado"));
+        }
+
+        Long userId;
+        try {
+            userId = Long.parseLong(auth.getName());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponseDto(false, "Token inválido: ID de usuario no numérico"));
+        }
+
+        Usuario usuario = usuarioRepo.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
+
+        try {
+            if ("correo".equals(metodo) && usuario.getCorreo_auth() != null) {
+                otpService.generateAndSendCode(usuario.getCorreo(), usuario.getCorreo_auth());
+                return ResponseEntity.ok(new AuthResponseDto(true, "Código enviado exitosamente"));
+            } else if ("sms".equals(metodo) && usuario.getTelefono() != null) {
+                otpService.generateAndSendCode(usuario.getCorreo(), usuario.getTelefono());
+                return ResponseEntity.ok(new AuthResponseDto(true, "Código enviado exitosamente"));
+            } else {
+                return ResponseEntity.badRequest()
+                    .body(new AuthResponseDto(false, "Método no válido o no configurado"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new AuthResponseDto(false, "Error al enviar código"));
+        }
     }
-
-    Usuario u = usuarioRepo.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("Usuario no existe"));
-
-    if ("correo".equals(metodo) && u.getCorreo_auth() != null) {
-        otpService.generateAndSendCode(u.getCorreo(), u.getCorreo_auth());
-        return ResponseEntity.ok("Código enviado al correo alternativo.");
-    } else if ("sms".equals(metodo) && u.getTelefono() != null) {
-        otpService.generateAndSendCode(u.getCorreo(), u.getTelefono());
-        return ResponseEntity.ok("Código enviado al teléfono.");
-    } else {
-        return ResponseEntity.badRequest().body("Método no válido o no configurado.");
-    }
-}
-
-
 
     /** Olvidé contraseña */
     @PostMapping("/forgot-password")
-public ResponseEntity<?> forgotPassword(@RequestBody Map<String,String> body) {
-    String correo = body.get("correo");
-    auth.forgotPassword(correo);
-    return ResponseEntity.ok("Email de recuperación enviado");
-}
-
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        try {
+            String correo = body.get("correo");
+            auth.forgotPassword(correo);
+            return ResponseEntity.ok(new AuthResponseDto(true, 
+                "Se ha enviado un correo con instrucciones para restablecer tu contraseña"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new AuthResponseDto(false, "No se encontró una cuenta con ese correo"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new AuthResponseDto(false, e.getMessage()));
+        }
+    }
 
     /** Restablecer contraseña */
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         try {
+            String correo = body.get("correo");
             String token = body.get("token");
-            String nueva = body.get("nuevaContraseña");
-            auth.resetPassword(token, nueva);
-            return ResponseEntity.ok("Contraseña restablecida");
+            String contraseña = body.get("contraseña");
+            
+            auth.resetPassword(token, contraseña);
+            return ResponseEntity.ok(new AuthResponseDto(true, "Contraseña restablecida exitosamente"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(new AuthResponseDto(false, "Token inválido o expirado"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new AuthResponseDto(false, e.getMessage()));
         }
     }
 
@@ -159,10 +295,51 @@ public ResponseEntity<?> forgotPassword(@RequestBody Map<String,String> body) {
     @PostMapping("/login-google")
     public ResponseEntity<?> loginGoogle(@RequestBody Map<String, String> body) {
         try {
-            String jwt = auth.loginGoogle(body.get("token"));
-            return ResponseEntity.ok(new JwtResponse(jwt));
+            String idToken = body.get("idToken");
+            String jwt = auth.loginGoogle(idToken);
+            
+            // Obtener información del usuario
+            String correo = auth.getEmailFromGoogleToken(idToken);
+            Usuario usuario = usuarioRepo.findByCorreo(correo).orElse(null);
+            
+            if (usuario != null) {
+                UsuarioResponseDto userDto = new UsuarioResponseDto(
+                    usuario.getId(),
+                    usuario.getNombre(),
+                    usuario.getApellidos(),
+                    usuario.getCorreo(),
+                    usuario.getTelefono(),
+                    usuario.getRol(),
+                    usuario.getFechaRegistro()
+                );
+                
+                AuthResponseDto response = new AuthResponseDto(
+                    true,
+                    "Login con Google exitoso",
+                    jwt,
+                    userDto,
+                    false
+                );
+                
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest()
+                    .body(new AuthResponseDto(false, "Usuario no encontrado"));
+            }
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new AuthResponseDto(false, e.getMessage()));
         }
+    }
+
+    /** Probar Conexión */
+    @GetMapping("/test-connection")
+    public ResponseEntity<?> testConnection() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Conexión exitosa");
+        response.put("timestamp", LocalDateTime.now());
+        
+        return ResponseEntity.ok(response);
     }
 }

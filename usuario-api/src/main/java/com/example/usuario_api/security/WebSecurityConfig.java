@@ -42,14 +42,20 @@ public class WebSecurityConfig {
           .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authorizeHttpRequests(auth -> auth
               .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-              .requestMatchers(HttpMethod.GET, "/api/usuario/productos/**").permitAll()
-              .requestMatchers(HttpMethod.GET, "/api/usuario/categorias/**").permitAll()
-
-
+              
+              // Endpoints públicos
               .requestMatchers("/api/auth/**").permitAll()
-              .requestMatchers("/api/me").authenticated() // ✅ permitido si tiene token
+              .requestMatchers("/api/usuario/productos/**").permitAll()
+              .requestMatchers("/api/usuario/categorias/**").permitAll()
               .requestMatchers("/api/usuario/diseno/**").permitAll() // ✅ temporalmente público para pruebas
+              
+              // Endpoints autenticados
+              .requestMatchers("/api/me").authenticated()
+              .requestMatchers("/api/usuario/perfil").authenticated()
+              .requestMatchers("/api/diseno/**").authenticated() // ✅ Endpoint de diseños autenticado
               .requestMatchers("/api/stripe/**").authenticated()
+              .requestMatchers("/api/carrito/**").authenticated()
+              .requestMatchers("/api/pedidos/**").authenticated()
 
               .anyRequest().authenticated()
           );
@@ -64,11 +70,11 @@ public class WebSecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // ✅ Configuración CORS para aceptar desde localhost:5173
+    // ✅ Configuración CORS para permitir cualquier origen
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOriginPatterns(List.of("*")); // Permitir cualquier origen
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*","Authorization"));
         config.setAllowCredentials(true);

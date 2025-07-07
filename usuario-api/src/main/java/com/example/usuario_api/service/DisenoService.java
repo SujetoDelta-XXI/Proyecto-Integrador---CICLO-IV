@@ -2,6 +2,8 @@ package com.example.usuario_api.service;
 
 import com.example.usuario_api.dto.GenerarImagenRequestDto;
 import com.example.usuario_api.dto.GenerarImagenResponseDto;
+import com.example.usuario_api.dto.DisenoDto;
+import com.example.usuario_api.dto.DisenosSeparadosDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.MediaType;
@@ -9,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.Map;
 import java.util.List;
+import java.util.stream.Collectors;
 import com.example.usuario_api.model.CustomDesign;
 import com.example.usuario_api.model.Usuario;
 import com.example.usuario_api.repository.CustomDesignRepository;
@@ -93,5 +96,48 @@ public class DisenoService {
         diseno.setEstado("pendiente");
         diseno.setUsuario(usuarioOpt.get());
         return customDesignRepository.save(diseno);
+    }
+
+    // Get pending designs for a user
+    public List<DisenoDto> getDisenosPendientes(Long usuarioId) {
+        System.out.println("🎯 Obteniendo diseños pendientes para usuario: " + usuarioId);
+        List<CustomDesign> disenos = customDesignRepository.findByUsuarioIdAndEstadoOrderByFechaCreacionDesc(usuarioId, "pendiente");
+        List<DisenoDto> disenosDto = disenos.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        System.out.println("✅ Encontrados " + disenosDto.size() + " diseños pendientes");
+        return disenosDto;
+    }
+
+    // Get approved designs for a user
+    public List<DisenoDto> getDisenosAprobados(Long usuarioId) {
+        System.out.println("🎯 Obteniendo diseños aprobados para usuario: " + usuarioId);
+        List<CustomDesign> disenos = customDesignRepository.findByUsuarioIdAndEstadoOrderByFechaCreacionDesc(usuarioId, "aprobado");
+        List<DisenoDto> disenosDto = disenos.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        System.out.println("✅ Encontrados " + disenosDto.size() + " diseños aprobados");
+        return disenosDto;
+    }
+
+    // Get all designs for a user separated by status
+    public DisenosSeparadosDto getDisenosSeparados(Long usuarioId) {
+        System.out.println("🎯 Obteniendo todos los diseños separados para usuario: " + usuarioId);
+        List<DisenoDto> pendientes = getDisenosPendientes(usuarioId);
+        List<DisenoDto> aprobados = getDisenosAprobados(usuarioId);
+        return new DisenosSeparadosDto(pendientes, aprobados);
+    }
+
+    // Convert CustomDesign to DisenoDto
+    private DisenoDto convertToDto(CustomDesign diseno) {
+        return new DisenoDto(
+            diseno.getId(),
+            diseno.getUrl_imagen(),
+            diseno.getDescripcion(),
+            diseno.getFecha_creacion(),
+            diseno.getEstado(),
+            diseno.getUsuario().getId(),
+            diseno.getUsuario().getNombre() + " " + diseno.getUsuario().getApellidos()
+        );
     }
 } 

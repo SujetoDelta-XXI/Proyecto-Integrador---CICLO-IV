@@ -13,7 +13,7 @@ import com.example.usuario_api.service.PedidoService;
 
 @RestController
 @RequestMapping("/api/usuario/pedidos")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class PedidoController {
 
     private final PedidoService service;
